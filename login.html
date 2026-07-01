@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - LoopStudy</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <script src="../js/storage.js"></script>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-container">
+      <div class="auth-header">
+        <a href="/loopstudy-vanilla" class="auth-logo">LoopStudy</a>
+        <h2>Welcome Back</h2>
+        <p>Sign in to continue your learning journey</p>
+      </div>
+
+      <form class="auth-form" id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="Enter your email" required>
+          <span class="error-text" id="emailError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="password-wrapper">
+            <input id="password" type="password" placeholder="Enter your password" required>
+            <button type="button" class="password-toggle" id="togglePassword" tabindex="-1">&#128065;</button>
+          </div>
+          <span class="error-text" id="passwordError"></span>
+        </div>
+
+        <div class="form-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="rememberMe">
+            <span>Remember me</span>
+          </label>
+        </div>
+
+        <button type="submit" class="auth-btn" id="loginBtn">Sign In</button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Don't have an account? <a href="/loopstudy-vanilla/register.html" class="link-accent">Create one</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Redirect if already logged in
+      try {
+        var currentUser = JSON.parse(localStorage.getItem('loopstudy_currentUser'));
+        if (currentUser && currentUser.id) {
+          window.location.href = 'dashboard.html';
+          return;
+        }
+      } catch(e) {}
+
+      var form = document.getElementById('loginForm');
+      var emailInput = document.getElementById('email');
+      var passwordInput = document.getElementById('password');
+      var emailError = document.getElementById('emailError');
+      var passwordError = document.getElementById('passwordError');
+      var loginBtn = document.getElementById('loginBtn');
+      var toggleBtn = document.getElementById('togglePassword');
+
+      // Toggle password visibility
+      toggleBtn.addEventListener('click', function() {
+        var isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        toggleBtn.innerHTML = isPassword ? '&#128584;' : '&#128065;';
+      });
+
+      function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      function clearErrors() {
+        emailError.textContent = '';
+        passwordError.textContent = '';
+        emailInput.classList.remove('input-error');
+        passwordInput.classList.remove('input-error');
+      }
+
+      function showError(input, errorEl, msg) {
+        input.classList.add('input-error');
+        errorEl.textContent = msg;
+      }
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        clearErrors();
+
+        var email = emailInput.value.trim();
+        var password = passwordInput.value;
+        var valid = true;
+
+        if (!email) {
+          showError(emailInput, emailError, 'Email is required');
+          valid = false;
+        } else if (!validateEmail(email)) {
+          showError(emailInput, emailError, 'Invalid email format');
+          valid = false;
+        }
+
+        if (!password) {
+          showError(passwordInput, passwordError, 'Password is required');
+          valid = false;
+        } else if (password.length < 6) {
+          showError(passwordInput, passwordError, 'Password must be at least 6 characters');
+          valid = false;
+        }
+
+        if (!valid) return;
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Signing in...';
+
+        try {
+          var users = JSON.parse(localStorage.getItem('loopstudy_users') || '[]');
+          var user = users.find(function(u) { return u.email === email; });
+
+          if (!user) {
+            showError(emailInput, emailError, 'User not found');
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Sign In';
+            return;
+          }
+
+          if (user.password !== password) {
+            showError(passwordInput, passwordError, 'Invalid password');
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Sign In';
+            return;
+          }
+
+          var safeUser = { id: user.id, name: user.name, email: user.email, college: user.college, skills: user.skills || [], avatar: user.avatar, mentorStatus: user.mentorStatus || false, createdAt: user.createdAt };
+          localStorage.setItem('loopstudy_currentUser', JSON.stringify(safeUser));
+          window.location.href = 'dashboard.html';
+        } catch(err) {
+          alert('Login failed: ' + (err.message || 'Unknown error'));
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Sign In';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

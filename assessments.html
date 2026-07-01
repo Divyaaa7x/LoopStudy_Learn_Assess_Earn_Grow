@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assessments - LoopStudy</title>
+  <link rel="icon" href="../assets/favicon.png" />
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .assess-page { padding: 24px; margin-top: 64px; min-height: 100vh; background: var(--dark); }
+    .assess-container { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+
+    .subject-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .subject-card { background: var(--dark2); border-radius: 16px; padding: 28px 20px; border: 2px solid var(--border); text-align: center; cursor: pointer; transition: all 0.3s; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .subject-card:hover { transform: translateY(-3px); border-color: rgba(108,99,255,0.3); }
+    .subject-card.selected { border-color: var(--primary); background: rgba(108,99,255,0.08); }
+    .subject-icon { font-size: 40px; }
+    .subject-name { font-size: 16px; font-weight: 600; color: #fff; }
+    .subject-color { width: 100%; height: 4px; border-radius: 2px; margin-top: 4px; }
+
+    .diff-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .diff-card { background: var(--dark2); border-radius: 14px; padding: 20px; border: 2px solid var(--border); text-align: center; cursor: pointer; transition: all 0.3s; }
+    .diff-card:hover { transform: translateY(-2px); border-color: rgba(108,99,255,0.3); }
+    .diff-card.selected { border-color: var(--primary); background: rgba(108,99,255,0.08); }
+    .diff-name { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .diff-time { font-size: 12px; color: var(--text-muted); }
+    .diff-desc { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+    .quiz-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .quiz-meta { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .quiz-meta-item { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+    .timer-display { font-size: 20px; font-weight: 700; color: var(--warning); font-variant-numeric: tabular-nums; }
+    .timer-display.urgent { color: var(--secondary); animation: pulse 1s infinite; }
+
+    .question-area { background: var(--dark2); border-radius: 16px; padding: 28px; border: 1px solid var(--border); }
+    .question-number { font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 8px; }
+    .question-text { font-size: 17px; font-weight: 500; color: #fff; margin-bottom: 24px; line-height: 1.5; }
+    .options-grid { display: flex; flex-direction: column; gap: 10px; }
+    .option-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 18px; border-radius: 12px; border: 2px solid var(--border); background: var(--dark); color: var(--text); font-size: 15px; cursor: pointer; transition: all 0.2s; text-align: left; font-family: inherit; }
+    .option-btn:hover:not(.disabled) { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.05); }
+    .option-btn.selected { border-color: var(--primary); background: rgba(108,99,255,0.12); }
+    .option-btn.correct { border-color: var(--success); background: rgba(0,200,83,0.12); }
+    .option-btn.wrong { border-color: var(--secondary); background: rgba(255,107,107,0.12); }
+    .option-btn.disabled { cursor: default; opacity: 0.7; }
+    .option-label { width: 28px; height: 28px; border-radius: 50%; background: var(--dark3); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .option-btn.selected .option-label { background: var(--primary); color: #fff; }
+    .option-btn.correct .option-label { background: var(--success); color: #fff; }
+    .option-btn.wrong .option-label { background: var(--secondary); color: #fff; }
+
+    .quiz-nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .explanation-box { background: var(--dark); border-radius: 12px; padding: 16px 20px; margin-top: 20px; border-left: 4px solid var(--primary); }
+    .explanation-box.correct { border-color: var(--success); }
+    .explanation-box.wrong { border-color: var(--secondary); }
+    .explanation-label { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .explanation-label.is-correct { color: var(--success); }
+    .explanation-label.is-wrong { color: var(--secondary); }
+    .explanation-text { font-size: 13px; color: #bbb; line-height: 1.5; margin: 0; }
+
+    .review-card { background: var(--dark2); border-radius: 14px; padding: 16px 20px; border: 1px solid var(--border); margin-bottom: 12px; }
+    .review-q-num { font-size: 12px; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+    .review-q-text { font-size: 14px; color: #fff; margin-bottom: 8px; }
+    .review-answer { font-size: 13px; display: flex; gap: 16px; flex-wrap: wrap; }
+    .review-answer .correct-ans { color: var(--success); }
+    .review-answer .wrong-ans { color: var(--secondary); }
+    .review-exp { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+    .result-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; border-radius: 20px; font-size: 16px; font-weight: 700; }
+    .result-badge.passed { background: rgba(0,200,83,0.15); color: var(--success); border: 1px solid rgba(0,200,83,0.3); }
+    .result-badge.failed { background: rgba(255,107,107,0.15); color: var(--secondary); border: 1px solid rgba(255,107,107,0.3); }
+
+    .progress-text { font-size: 13px; color: var(--text-muted); }
+    @media (max-width: 768px) {
+      .assess-page { padding: 16px; }
+      .subject-cards, .diff-cards { grid-template-columns: 1fr; }
+      .question-area { padding: 20px; }
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <nav class="navbar">
+      <a class="navbar-brand" href="dashboard.html">LoopStudy</a>
+      <button class="hamburger-btn" onclick="document.querySelector('.navbar-links').classList.toggle('open')">☰</button>
+      <ul class="navbar-links">
+        <li><a class="navbar-link" href="dashboard.html">Dashboard</a></li>
+        <li><a class="navbar-link" href="mentors.html">Mentors</a></li>
+        <li><a class="navbar-link" href="sessions.html">Sessions</a></li>
+        <li><a class="navbar-link active" href="assessments.html">Assessments</a></li>
+        <li><a class="navbar-link" href="leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <div class="navbar-right">
+        <div class="navbar-user" onclick="location.href='profile.html'" style="cursor:pointer">
+          <img class="navbar-avatar" id="navAvatar" src="https://ui-avatars.com/api/?name=User" alt="">
+          <span class="navbar-username" id="navName">User</span>
+          <span class="navbar-points">⚡ <span id="navPoints">0</span></span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="assess-page">
+      <div class="assess-container" id="appContainer"></div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <div>
+          <span class="footer-brand">LoopStudy</span>
+          <p class="footer-desc">Learn, Assess, Earn and Grow with personalized mentorship and skill-based learning.</p>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Platform</h4>
+          <ul class="footer-links">
+            <li><a class="footer-link" href="dashboard.html">Dashboard</a></li>
+            <li><a class="footer-link" href="mentors.html">Mentors</a></li>
+            <li><a class="footer-link" href="assessments.html">Assessments</a></li>
+            <li><a class="footer-link" href="leaderboard.html">Leaderboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Support</h4>
+          <ul class="footer-links">
+            <li><a class="footer-link" href="#">Help Center</a></li>
+            <li><a class="footer-link" href="#">Privacy Policy</a></li>
+            <li><a class="footer-link" href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Connect</h4>
+          <ul class="footer-links">
+            <li><a class="footer-link" href="#">Twitter</a></li>
+            <li><a class="footer-link" href="#">Discord</a></li>
+            <li><a class="footer-link" href="#">GitHub</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy">© 2026 LoopStudy. All rights reserved.</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      try {
+        const user = JSON.parse(localStorage.getItem('loopstudy_currentUser'));
+        if (!user) { window.location.href = 'login.html'; }
+      } catch(e) { window.location.href = 'login.html'; }
+    })();
+
+    let currentUser = null;
+    try { currentUser = JSON.parse(localStorage.getItem('loopstudy_currentUser')); } catch(e) {}
+
+    (function updateNav() {
+      try {
+        const u = JSON.parse(localStorage.getItem('loopstudy_currentUser'));
+        if (u) {
+          document.getElementById('navName').textContent = u.name || 'User';
+          document.getElementById('navAvatar').src = u.avatar || 'https://ui-avatars.com/api/?name='+encodeURIComponent(u.name||'User');
+          const profileKey = 'loopstudy_profile_' + u.id;
+          const profile = JSON.parse(localStorage.getItem(profileKey));
+          if (profile) document.getElementById('navPoints').textContent = profile.skillPoints || 0;
+        }
+      } catch(e) {}
+    })();
+
+    const subjects = {
+      'Python': { icon: '🐍', color: '#4B8BBE' },
+      'Java': { icon: '☕', color: '#E76F00' },
+      'Web Development': { icon: '🌐', color: '#2196F3' }
+    };
+    const difficulties = { 'easy': { time: 600, label: 'Easy' }, 'medium': { time: 900, label: 'Medium' }, 'hard': { time: 1200, label: 'Hard' } };
+
+    const Q = {
+      Python: {
+        easy: [
+          { q: 'What is the correct way to print "Hello" in Python?', o: ['echo("Hello")','print("Hello")','console.log("Hello")','System.out.println("Hello")'], c: 1, e: 'print() is the built-in function for output in Python.' },
+          { q: 'Which of the following is a valid variable name in Python?', o: ['2var','my-var','my_var','my var'], c: 2, e: 'Variable names can contain letters, digits and underscores but must not start with a digit.' },
+          { q: 'What data type is the value 3.14 in Python?', o: ['int','str','float','bool'], c: 2, e: 'Numbers with a decimal point are of type float in Python.' },
+          { q: 'What is the result of 10 // 3 in Python?', o: ['3.33','3','3.0','1'], c: 1, e: '// is the floor division operator; it returns the integer quotient.' },
+          { q: 'Which keyword is used to define a function in Python?', o: ['func','function','def','define'], c: 2, e: 'The def keyword is used to define functions in Python.' }
+        ],
+        medium: [
+          { q: 'What does [x**2 for x in range(5)] return?', o: ['[1,4,9,16,25]','[0,1,4,9,16]','[0,2,4,6,8]','[0,1,2,3,4]'], c: 1, e: 'List comprehension squares each number from 0 to 4 inclusive.' },
+          { q: 'How do you handle exceptions in Python?', o: ['try...catch','try...except','if...else','throw...catch'], c: 1, e: 'Python uses try...except blocks for exception handling.' },
+          { q: 'What is the output of print(type([]))?', o: ["<class 'list'>","<class 'dict'>","<class 'tuple'>","<class 'array'>"], c: 0, e: '[] creates an empty list in Python.' },
+          { q: 'Which method adds an element to a list?', o: ['add()','push()','append()','insert()'], c: 2, e: 'append() adds an element to the end of a list.' },
+          { q: 'What does len() return for a string?', o: ['Memory size','Number of characters','Number of words','Number of lines'], c: 1, e: 'len() returns the number of characters in a string.' }
+        ],
+        hard: [
+          { q: 'What is a decorator in Python?', o: ['A function that modifies another function','A class that inherits from another','A special variable','An error handler'], c: 0, e: 'Decorators are functions that take another function and extend its behavior.' },
+          { q: 'Which keyword is used to create a generator?', o: ['return','yield','generate','await'], c: 1, e: 'The yield keyword makes a function a generator, producing values lazily.' },
+          { q: 'What is the output of: print(2**3**2)?', o: ['64','512','12','256'], c: 1, e: 'Exponentiation is right-associative: 3**2=9, 2**9=512.' },
+          { q: 'Which module is used for regular expressions in Python?', o: ['regex','re','regexp','pyre'], c: 1, e: "The re module provides regular expression matching operations." },
+          { q: 'What does the __init__ method do in a Python class?', o: ['Deletes the object','Initializes a new object','Returns string representation','Compares two objects'], c: 1, e: '__init__ is the constructor method called when a new object is created.' }
+        ]
+      },
+      Java: {
+        easy: [
+          { q: 'Which is the correct main method signature in Java?', o: ['public static void main(String[] args)','static void main(String[] args)','public void main(String[] args)','public static int main(String[] args)'], c: 0, e: 'Java requires exactly public static void main(String[] args) as the entry point.' },
+          { q: 'What is the size of int in Java?', o: ['16 bits','32 bits','64 bits','8 bits'], c: 1, e: 'The int type in Java is a 32-bit signed integer.' },
+          { q: 'Which operator is used for equality comparison in Java?', o: ['=','==','===','.equals()'], c: 1, e: '== is used for primitive comparison and reference equality in Java.' },
+          { q: 'Which loop executes the body at least once?', o: ['for','while','do-while','foreach'], c: 2, e: 'do-while checks the condition after executing the body, so it always runs at least once.' },
+          { q: 'What is the default value of a boolean in Java?', o: ['true','false','0','null'], c: 1, e: 'boolean variables default to false in Java.' }
+        ],
+        medium: [
+          { q: 'What is inheritance in Java?', o: ['Creating multiple instances of a class','A class acquiring properties of another','Hiding data from external access','Implementing multiple interfaces'], c: 1, e: 'Inheritance allows a class to acquire fields and methods of another class.' },
+          { q: 'Which keyword refers to the current object in Java?', o: ['super','this','self','current'], c: 1, e: 'The this keyword refers to the current instance of a class.' },
+          { q: 'What is the output of: System.out.println("Java" + 1 + 2)?', o: ['Java3','Java12','3Java','Compilation error'], c: 1, e: 'String concatenation is left-associative; "Java"+1="Java1", then +2="Java12".' },
+          { q: 'Which collection stores key-value pairs?', o: ['ArrayList','HashSet','HashMap','LinkedList'], c: 2, e: 'HashMap stores key-value pairs and provides O(1) average lookup.' },
+          { q: 'What does the final keyword mean for a method?', o: ['The method is private','The method cannot be overridden','The method returns nothing','The method is static'], c: 1, e: 'A final method cannot be overridden by subclasses.' }
+        ],
+        hard: [
+          { q: 'What is a lambda expression in Java?', o: ['A way to create anonymous functions','A mathematical operation','A type of loop','A design pattern'], c: 0, e: 'Lambda expressions provide a concise way to implement functional interfaces.' },
+          { q: 'Which package contains the Stream API in Java?', o: ['java.io','java.util.stream','java.util','java.lang'], c: 1, e: 'The Stream API is in java.util.stream (Java 8+).' },
+          { q: 'What is the purpose of the volatile keyword?', o: ['To make a variable thread-safe','To mark a variable as temporary','To prevent serialization','To create a constant'], c: 0, e: 'volatile ensures that variable changes are visible across threads.' },
+          { q: 'What does synchronized ensure?', o: ['Thread safety','Faster execution','Memory optimization','Variable immutability'], c: 0, e: 'synchronized prevents multiple threads from executing a block concurrently.' },
+          { q: 'Which pattern ensures a class has only one instance?', o: ['Factory','Singleton','Observer','Builder'], c: 1, e: 'Singleton pattern restricts a class to a single instance with global access.' }
+        ]
+      },
+      'Web Development': {
+        easy: [
+          { q: 'Which HTML tag creates a hyperlink?', o: ['<link>','<a>','<href>','<nav>'], c: 1, e: 'The <a> (anchor) tag defines a hyperlink in HTML.' },
+          { q: 'Which CSS property changes text color?', o: ['font-color','text-color','color','background-color'], c: 2, e: 'The color property sets the foreground text color in CSS.' },
+          { q: 'Which HTML tag displays an image?', o: ['<img>','<image>','<src>','<picture>'], c: 0, e: 'The <img> tag embeds an image with the src attribute for the source.' },
+          { q: 'What does CSS stand for?', o: ['Computer Style Sheets','Cascading Style Sheets','Creative Style Sheets','Colorful Style Sheets'], c: 1, e: 'CSS stands for Cascading Style Sheets.' },
+          { q: 'Which JS function writes to the console?', o: ['console.write()','console.log()','console.print()','console.output()'], c: 1, e: 'console.log() outputs messages to the browser console.' }
+        ],
+        medium: [
+          { q: 'Which method adds an event listener in JavaScript?', o: ['addEventListener()','attachEvent()','listen()','on()'], c: 0, e: 'addEventListener() attaches an event handler to an element.' },
+          { q: 'What does display: flex do?', o: ['Makes element inline','Creates a flex container','Hides the element','Adds padding'], c: 1, e: 'display: flex establishes a flex container for flexible layouts.' },
+          { q: 'How do you select an element by its ID in JavaScript?', o: ['document.querySelector()','document.getElementById()','document.getElementByClass()','document.select()'], c: 1, e: 'getElementById() returns the element with the matching id attribute.' },
+          { q: 'What is the CSS box model?', o: ['A layout system','Content, padding, border, margin','A flexbox property','A grid system'], c: 1, e: 'The box model consists of content, padding, border, and margin layers.' },
+          { q: 'Which attribute opens a link in a new tab?', o: ['target="_blank"','href="_new"','rel="new"','target="_new"'], c: 0, e: 'target="_blank" opens the linked page in a new browser tab.' }
+        ],
+        hard: [
+          { q: 'What is a closure in JavaScript?', o: ['A function with access to its outer scope','A way to close a window','A built-in object','A CSS property'], c: 0, e: 'A closure is a function that retains access to its lexical scope even when executed outside it.' },
+          { q: 'What does the async keyword do?', o: ['Makes a function return a Promise','Makes a function run faster','Defines an arrow function','Creates a module'], c: 0, e: 'async functions always return a Promise, resolved with the return value.' },
+          { q: 'Which CSS Grid property defines columns?', o: ['grid-columns','grid-template-columns','grid-gap','grid-items'], c: 1, e: 'grid-template-columns defines the number and size of grid columns.' },
+          { q: 'What is localStorage used for?', o: ['Storing data on the server','Storing data in the browser persistently','Storing session data temporarily','Caching images'], c: 1, e: 'localStorage stores data in the browser with no expiration date.' },
+          { q: 'Which method converts a JSON string to a JS object?', o: ['JSON.stringify()','JSON.parse()','JSON.convert()','JSON.toObject()'], c: 1, e: 'JSON.parse() parses a JSON string into a JavaScript object.' }
+        ]
+      }
+    };
+
+    const state = { subject: null, difficulty: null, currentQ: 0, answers: {}, confirmed: {}, timer: null, timeLeft: 0, quizStarted: false, quizEnded: false, result: null };
+
+    function saveResult() { if (!currentUser) return;
+      const questions = Q[state.subject][state.difficulty];
+      let score = 0;
+      Object.keys(state.confirmed).forEach(idx => { if (state.answers[idx] === questions[idx].c) score++; });
+      const total = questions.length; const pct = Math.round(score/total*100); const passed = pct >= 40; const points = score * 10;
+      const result = { id: Date.now().toString(36)+'_'+Math.random().toString(36).substring(2,9), subject: state.subject, difficulty: state.difficulty, score, total, percentage: pct, passed, answers: state.answers, questions: questions, date: new Date().toISOString() };
+      const results = JSON.parse(localStorage.getItem('loopstudy_assessments_'+currentUser.id) || '[]');
+      results.push(result);
+      localStorage.setItem('loopstudy_assessments_'+currentUser.id, JSON.stringify(results));
+      const profileKey = 'loopstudy_profile_'+currentUser.id;
+      const profile = JSON.parse(localStorage.getItem(profileKey));
+      if (profile) {
+        profile.skillPoints = (profile.skillPoints||0) + points; profile.level = Math.min(Math.floor(profile.skillPoints/500)+1,5);
+        profile.assessmentsCompleted = (profile.assessmentsCompleted||0) + 1;
+        if (!profile.transactions) profile.transactions = [];
+        profile.transactions.push({ id: Date.now().toString(36)+'_'+Math.random().toString(36).substring(2,9), type: 'earned', amount: points, reason: 'Completed '+state.difficulty+' '+state.subject+' assessment', date: new Date().toISOString(), source: 'assessment' });
+        localStorage.setItem(profileKey, JSON.stringify(profile));
+      }
+      state.result = result; showReview(result);
+    }
+
+    function showSelect() {
+      state.quizStarted = false; state.quizEnded = false;
+      if (state.timer) { clearInterval(state.timer); state.timer = null; }
+      state.subject = null; state.difficulty = null; state.currentQ = 0; state.answers = {}; state.confirmed = {};
+      const c = document.getElementById('appContainer');
+      c.innerHTML = '<div class="page-header"><h1 class="page-title">Assessments</h1><p class="page-subtitle">Test your knowledge and earn SkillPoints</p></div><div><h3 style="margin:0 0 16px;font-size:16px;font-weight:600">Choose a Subject</h3><div class="subject-cards" id="subjectCards"></div></div><div id="diffSection" class="hidden"><h3 style="margin:0 0 16px;font-size:16px;font-weight:600">Choose Difficulty</h3><div class="diff-cards" id="diffCards"></div></div><div id="startSection" class="hidden" style="text-align:center;margin-top:8px"><button class="btn btn-primary btn-lg" id="startBtn" onclick="startQuiz()">Start Quiz</button></div>';
+      const sc = document.getElementById('subjectCards');
+      Object.keys(subjects).forEach(s => {
+        const sub = subjects[s];
+        sc.innerHTML += '<div class="subject-card" data-subject="'+s+'" onclick="selectSubject(\''+s+'\')"><div class="subject-icon">'+sub.icon+'</div><div class="subject-name">'+s+'</div><div class="subject-color" style="background:'+sub.color+'"></div></div>';
+      });
+    }
+
+    function selectSubject(s) { state.subject = s;
+      document.querySelectorAll('.subject-card').forEach(c => c.classList.toggle('selected', c.dataset.subject === s));
+      document.getElementById('diffSection').classList.remove('hidden');
+      const dc = document.getElementById('diffCards');
+      const diffInfo = { easy: { label: 'Easy', desc: 'Basic concepts and fundamentals', time: '10 min' }, medium: { label: 'Medium', desc: 'Intermediate level questions', time: '15 min' }, hard: { label: 'Hard', desc: 'Advanced topics and challenges', time: '20 min' } };
+      dc.innerHTML = '';
+      Object.keys(diffInfo).forEach(d => {
+        dc.innerHTML += '<div class="diff-card" data-diff="'+d+'" onclick="selectDifficulty(\''+d+'\')"><div class="diff-name">'+diffInfo[d].label+'</div><div class="diff-time">⏱ '+diffInfo[d].time+'</div><div class="diff-desc">'+diffInfo[d].desc+'</div></div>';
+      });
+      state.difficulty = null; document.getElementById('startSection').classList.add('hidden');
+    }
+
+    function selectDifficulty(d) { state.difficulty = d;
+      document.querySelectorAll('.diff-card').forEach(c => c.classList.toggle('selected', c.dataset.diff === d));
+      document.getElementById('startSection').classList.remove('hidden');
+    }
+
+    function startQuiz() {
+      if (!state.subject || !state.difficulty) return;
+      state.quizStarted = true; state.currentQ = 0; state.answers = {}; state.confirmed = {}; state.timeLeft = difficulties[state.difficulty].time;
+      renderQuiz(); startTimer();
+    }
+
+    function startTimer() {
+      if (state.timer) clearInterval(state.timer);
+      state.timer = setInterval(() => {
+        state.timeLeft--;
+        updateTimer();
+        if (state.timeLeft <= 0) { clearInterval(state.timer); state.timer = null; autoSubmit(); }
+      }, 1000);
+    }
+
+    function updateTimer() {
+      const el = document.getElementById('timerDisplay');
+      if (!el) return;
+      const m = Math.floor(state.timeLeft/60); const s = state.timeLeft%60;
+      el.textContent = m.toString().padStart(2,'0')+':'+s.toString().padStart(2,'0');
+      el.classList.toggle('urgent', state.timeLeft <= 60);
+    }
+
+    function autoSubmit() { saveResult(); }
+
+    function renderQuiz() {
+      const sub = subjects[state.subject]; const questions = Q[state.subject][state.difficulty]; const total = questions.length;
+      const c = document.getElementById('appContainer');
+      c.innerHTML = '<div class="quiz-header"><div class="quiz-meta"><span class="quiz-meta-item">'+sub.icon+' '+state.subject+'</span><span class="quiz-meta-item">📊 '+state.difficulty.charAt(0).toUpperCase()+state.difficulty.slice(1)+'</span></div><div class="timer-display" id="timerDisplay">--:--</div></div><div style="display:flex;align-items:center;gap:12px"><div class="progress-bar" style="flex:1"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div><span class="progress-text" id="progressText">0/'+total+'</span></div><div class="question-area" id="questionArea"></div><div class="quiz-nav"><div><button class="btn btn-outline" id="prevBtn" onclick="navigate(-1)">← Previous</button></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" id="confirmBtn" onclick="confirmAnswer()">Confirm Answer</button><button class="btn btn-primary" id="nextBtn" onclick="navigate(1)">Next →</button></div></div>';
+      updateTimer(); showQuestion();
+    }
+
+    function showQuestion() {
+      const qs = Q[state.subject][state.difficulty]; const total = qs.length; const idx = state.currentQ;
+      const q = qs[idx]; const labels = ['A','B','C','D'];
+      document.getElementById('progressFill').style.width = ((idx+1)/total*100)+'%';
+      document.getElementById('progressText').textContent = (idx+1)+'/'+total;
+      const isLast = idx === total-1; const isConfirmed = !!state.confirmed[idx];
+      document.getElementById('nextBtn').textContent = isLast ? 'Submit Quiz' : 'Next →';
+      document.getElementById('prevBtn').style.visibility = idx === 0 ? 'hidden' : 'visible';
+
+      let html = '<div class="question-number">Question '+(idx+1)+' of '+total+'</div><div class="question-text">'+q.q+'</div><div class="options-grid" id="optionsGrid">';
+      q.o.forEach((opt, oi) => {
+        let cls = 'option-btn';
+        if (state.answers[idx] === oi) cls += ' selected';
+        if (isConfirmed) { cls += ' disabled';
+          if (oi === q.c) cls += ' correct'; else if (state.answers[idx] === oi) cls += ' wrong';
+        } else if (state.answers[idx] !== undefined) cls += ' selected';
+        html += '<button class="'+cls+'" onclick="selectOption('+oi+')" '+(isConfirmed?'disabled':'')+'><span class="option-label">'+labels[oi]+'</span>'+opt+'</button>';
+      });
+      html += '</div>';
+      if (isConfirmed) {
+        const correct = state.answers[idx] === q.c;
+        html += '<div class="explanation-box '+(correct?'correct':'wrong')+'"><div class="explanation-label '+(correct?'is-correct':'is-wrong')+'">'+(correct?'✅ Correct!':'❌ Wrong!')+'</div><p class="explanation-text">'+q.e+'</p></div>';
+      }
+      document.getElementById('questionArea').innerHTML = html;
+      document.getElementById('confirmBtn').disabled = isConfirmed || state.answers[idx] === undefined;
+      if (isLast && Object.keys(state.confirmed).length === total) {
+        document.getElementById('nextBtn').disabled = false;
+      }
+    }
+
+    function selectOption(oi) {
+      const idx = state.currentQ;
+      if (state.confirmed[idx]) return;
+      state.answers[idx] = oi;
+      document.querySelectorAll('.option-btn').forEach((b, i) => {
+        b.classList.toggle('selected', i === oi);
+      });
+      document.getElementById('confirmBtn').disabled = false;
+    }
+
+    function confirmAnswer() {
+      const idx = state.currentQ;
+      if (state.answers[idx] === undefined || state.confirmed[idx]) return;
+      state.confirmed[idx] = true;
+      showQuestion();
+    }
+
+    function navigate(dir) {
+      const qs = Q[state.subject][state.difficulty]; const total = qs.length; const idx = state.currentQ + dir;
+      if (dir > 0 && idx >= total) { if (Object.keys(state.confirmed).length === total) { if (state.timer) clearInterval(state.timer); saveResult(); } return; }
+      if (idx < 0) return;
+      state.currentQ = idx; showQuestion();
+    }
+
+    function showReview(result) {
+      state.quizEnded = true;
+      if (state.timer) { clearInterval(state.timer); state.timer = null; }
+      const sub = subjects[state.subject]; const qs = result.questions; const total = qs.length;
+      const c = document.getElementById('appContainer');
+      let qhtml = '';
+      qs.forEach((q, i) => {
+        const ua = result.answers[i]; const correct = ua === q.c;
+        qhtml += '<div class="review-card"><div class="review-q-num">Question '+(i+1)+'</div><div class="review-q-text">'+q.q+'</div><div class="review-answer"><span>Your answer: <strong class="'+(correct?'correct-ans':'wrong-ans')+'">'+(ua!==undefined?q.o[ua]:'Not answered')+'</strong></span><span>Correct answer: <strong class="correct-ans">'+q.o[q.c]+'</strong></span></div><div class="review-exp">💡 '+q.e+'</div></div>';
+      });
+      c.innerHTML = '<div class="page-header"><h1 class="page-title">Assessment Complete</h1></div><div style="text-align:center;padding:24px"><div class="result-badge '+(result.passed?'passed':'failed')+'">'+(result.passed?'✅ Passed!':'❌ Failed')+'</div><div style="margin-top:20px;display:flex;gap:24px;justify-content:center;flex-wrap:wrap"><div><div style="font-size:28px;font-weight:700;color:#fff">'+result.score+'/'+result.total+'</div><div style="font-size:13px;color:var(--text-muted)">Score</div></div><div><div style="font-size:28px;font-weight:700;color:#fff">'+result.percentage+'%</div><div style="font-size:13px;color:var(--text-muted)">Percentage</div></div><div><div style="font-size:28px;font-weight:700;color:var(--warning)">+'+(result.score*10)+'</div><div style="font-size:13px;color:var(--text-muted)">Points Earned</div></div></div></div><h3 style="font-size:16px;font-weight:600;margin:0 0 16px">Question Review</h3>'+qhtml+'<div style="text-align:center;margin-top:24px"><button class="btn btn-primary btn-lg" onclick="showSelect()">Back to Assessments</button></div>';
+    }
+
+    document.addEventListener('DOMContentLoaded', showSelect);
+  </script>
+</body>
+</html>

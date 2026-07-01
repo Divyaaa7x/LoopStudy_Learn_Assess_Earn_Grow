@@ -1,0 +1,369 @@
+/* Dashboard Page */
+.dashboard-page {
+  min-height: 100vh;
+  background: var(--dark);
+  padding: 32px 24px;
+}
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Welcome Card */
+.welcome-card {
+  background: linear-gradient(135deg, #2D1B69, #3D1B2E);
+  border-radius: 20px;
+  padding: 32px 36px;
+  border: 1px solid rgba(108, 99, 255, 0.13);
+}
+
+.welcome-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.welcome-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 12px;
+}
+
+.welcome-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.streak-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(255, 107, 107, 0.15);
+  color: var(--secondary);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+/* Stats Grid */
+.stats-grid-dash {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* Quick Actions */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.quick-action-card {
+  background: var(--dark2);
+  border-radius: 14px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.quick-action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.quick-action-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.quick-action-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.dashboard-section {
+  background: var(--dark2);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+}
+
+.dashboard-section.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Section Titles */
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 20px;
+}
+
+.sub-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 16px 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Activity Feed */
+.activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.activity-dot.earned {
+  background: var(--success);
+}
+
+.activity-dot.spent {
+  background: var(--secondary);
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-text {
+  display: block;
+  font-size: 14px;
+  color: #ddd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-date {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.activity-amount {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.activity-amount.earned {
+  color: var(--success);
+}
+
+.activity-amount.spent {
+  color: var(--secondary);
+}
+
+/* Challenge Cards (Dashboard) */
+.challenges-section-dash {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Skill Path Cards */
+.skill-paths-dash {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.skill-path-card {
+  background: var(--dark);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.skill-path-card:hover {
+  border-color: rgba(108, 99, 255, 0.27);
+}
+
+.skill-path-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.skill-path-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.skill-path-skill {
+  font-size: 12px;
+  color: var(--primary);
+  font-weight: 500;
+  padding: 2px 8px;
+  background: rgba(108, 99, 255, 0.12);
+  border-radius: 6px;
+}
+
+.skill-path-cost {
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.skill-path-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.skill-path-modules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.module-pill {
+  font-size: 12px;
+  color: #ddd;
+  background: var(--dark2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.skill-path-link {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.skill-path-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-muted);
+}
+
+.empty-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Responsive Dashboard */
+@media (max-width: 768px) {
+  .dashboard-page {
+    padding: 16px;
+  }
+
+  .welcome-card {
+    padding: 24px 20px;
+  }
+
+  .welcome-title {
+    font-size: 22px;
+  }
+
+  .welcome-info {
+    flex-direction: column;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid-dash {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .skill-paths-dash {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid-dash {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
