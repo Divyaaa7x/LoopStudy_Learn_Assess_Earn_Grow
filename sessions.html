@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sessions - LoopStudy</title>
+  <link rel="icon" href="../assets/favicon.png" />
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .sessions-page { padding: 24px; margin-top: 64px; min-height: 100vh; background: var(--dark); }
+    .sessions-container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .sessions-header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .session-cards { display: flex; flex-direction: column; gap: 12px; }
+    .session-card { background: var(--dark2); border-radius: 14px; padding: 20px; border: 1px solid var(--border); display: flex; align-items: center; gap: 20px; transition: all 0.2s; }
+    .session-card:hover { border-color: rgba(108,99,255,0.2); }
+    .session-avatar { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--primary); flex-shrink: 0; object-fit: cover; }
+    .session-info { flex: 1; min-width: 0; }
+    .session-mentor-name { font-size: 15px; font-weight: 600; color: #fff; margin: 0 0 2px; }
+    .session-skill { font-size: 12px; color: var(--primary); font-weight: 500; }
+    .session-detail { font-size: 13px; color: var(--text-muted); margin-top: 4px; display: flex; gap: 16px; flex-wrap: wrap; }
+    .session-detail span { display: flex; align-items: center; gap: 4px; }
+    .session-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .book-section { background: var(--dark2); border-radius: 16px; padding: 24px; border: 1px solid var(--border); }
+    .book-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .cost-display { font-size: 15px; font-weight: 700; color: var(--warning); display: flex; align-items: center; gap: 6px; padding: 12px; background: var(--dark); border-radius: 10px; justify-content: center; }
+
+    .empty-sessions { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .empty-sessions-icon { font-size: 40px; display: block; margin-bottom: 12px; }
+
+    .tab-count { font-size: 11px; background: rgba(255,255,255,0.15); padding: 1px 7px; border-radius: 10px; font-weight: 600; }
+
+    @media (max-width: 768px) {
+      .sessions-page { padding: 16px; }
+      .book-grid { grid-template-columns: 1fr; }
+      .session-card { flex-direction: column; align-items: flex-start; }
+      .session-actions { align-self: flex-end; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <nav class="navbar">
+      <a class="navbar-brand" href="dashboard.html">LoopStudy</a>
+      <button class="hamburger-btn" onclick="document.querySelector('.navbar-links').classList.toggle('open')">☰</button>
+      <ul class="navbar-links">
+        <li><a class="navbar-link" href="dashboard.html">Dashboard</a></li>
+        <li><a class="navbar-link" href="mentors.html">Mentors</a></li>
+        <li><a class="navbar-link active" href="sessions.html">Sessions</a></li>
+        <li><a class="navbar-link" href="assessments.html">Assessments</a></li>
+        <li><a class="navbar-link" href="leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <div class="navbar-right">
+        <div class="navbar-user" onclick="location.href='profile.html'" style="cursor:pointer">
+          <img class="navbar-avatar" id="navAvatar" src="https://ui-avatars.com/api/?name=User" alt="">
+          <span class="navbar-username" id="navName">User</span>
+          <span class="navbar-points">⚡ <span id="navPoints">0</span></span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sessions-page">
+      <div class="sessions-container">
+        <div class="sessions-header-row">
+          <div>
+            <h1 class="page-title" style="margin:0 0 4px">Sessions</h1>
+            <p class="page-subtitle" style="margin:0">Book and manage your mentorship sessions</p>
+          </div>
+          <button class="btn btn-primary" id="showBookBtn" onclick="toggleBookForm()">+ Book Session</button>
+        </div>
+
+        <div class="tab-group" id="tabGroup">
+          <button class="tab-btn active" data-tab="pending" onclick="switchTab('pending')">Pending <span class="tab-count" id="pendingCount">0</span></button>
+          <button class="tab-btn" data-tab="upcoming" onclick="switchTab('upcoming')">Upcoming <span class="tab-count" id="upcomingCount">0</span></button>
+          <button class="tab-btn" data-tab="completed" onclick="switchTab('completed')">Completed <span class="tab-count" id="completedCount">0</span></button>
+        </div>
+
+        <div class="session-cards" id="sessionCards"></div>
+
+        <div class="book-section hidden" id="bookSection">
+          <h3 style="margin:0 0 16px;font-size:18px;font-weight:600">Book a Session</h3>
+          <div class="book-grid">
+            <div class="form-group">
+              <label class="form-label">Select Mentor</label>
+              <select class="form-select" id="mentorSelect"><option value="">Choose a mentor...</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input class="form-input" type="date" id="sessionDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time Slot</label>
+              <select class="form-select" id="timeSlotSelect">
+                <option value="">Select time slot...</option>
+                <option value="Morning (9-12)">Morning (9-12)</option>
+                <option value="Afternoon (12-3)">Afternoon (12-3)</option>
+                <option value="Evening (3-6)">Evening (3-6)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cost</label>
+              <div class="cost-display">⭐ <span id="costDisplay">0</span> SkillPoints</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:12px;justify-content:flex-end">
+            <button class="btn btn-outline" onclick="toggleBookForm()">Cancel</button>
+            <button class="btn btn-primary" id="bookBtn" onclick="bookSession()">Book Session</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <div>
+          <span class="footer-brand">LoopStudy</span>
+          <p class="footer-desc">Learn, Assess, Earn and Grow with personalized mentorship and skill-based learning.</p>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Platform</h4>
+          <ul class="footer-links">
+            <li><a class="footer-link" href="dashboard.html">Dashboard</a></li>
+            <li><a class="footer-link" href="mentors.html">Mentors</a></li>
+            <li><a class="footer-link" href="assessments.html">Assessments</a></li>
+            <li><a class="footer-link" href="leaderboard.html">Leaderboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Support</h4>
+          <ul class="footer-links">
+            <li><a class="footer-link" href="#">Help Center</a></li>
+            <li><a class="footer-link" href="#">Privacy Policy</a></li>
+            <li><a class="footer-link" href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Connect</h4>
+          <ul class="footer-links">
+            <li><a class="footer-link" href="#">Twitter</a></li>
+            <li><a class="footer-link" href="#">Discord</a></li>
+            <li><a class="footer-link" href="#">GitHub</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy">© 2026 LoopStudy. All rights reserved.</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function() {
+      try {
+        const user = JSON.parse(localStorage.getItem('loopstudy_currentUser'));
+        if (!user) { window.location.href = 'login.html'; }
+      } catch(e) { window.location.href = 'login.html'; }
+    })();
+
+    let currentUser = null;
+    try { currentUser = JSON.parse(localStorage.getItem('loopstudy_currentUser')); } catch(e) {}
+
+    (function updateNav() {
+      try {
+        const u = JSON.parse(localStorage.getItem('loopstudy_currentUser'));
+        if (u) {
+          document.getElementById('navName').textContent = u.name || 'User';
+          document.getElementById('navAvatar').src = u.avatar || 'https://ui-avatars.com/api/?name='+encodeURIComponent(u.name||'User');
+          const profileKey = 'loopstudy_profile_' + u.id;
+          const profile = JSON.parse(localStorage.getItem(profileKey));
+          if (profile) document.getElementById('navPoints').textContent = profile.skillPoints || 0;
+        }
+      } catch(e) {}
+    })();
+
+    const mentors = [
+      { id:1,name:'Arjun Sharma',skill:'Python',cost:50 },
+      { id:2,name:'Neha Patel',skill:'Java',cost:45 },
+      { id:3,name:'Vikram Reddy',skill:'Web Development',cost:60 },
+      { id:4,name:'Sanya Gupta',skill:'React',cost:55 },
+      { id:5,name:'Rohit Joshi',skill:'Data Science',cost:50 },
+      { id:6,name:'Ananya Mishra',skill:'Machine Learning',cost:65 },
+      { id:7,name:'Karthik Nair',skill:'Python',cost:40 },
+      { id:8,name:'Shreya Deshmukh',skill:'Java',cost:50 },
+      { id:9,name:'Aryan Khanna',skill:'Web Development',cost:50 },
+      { id:10,name:'Isha Talwar',skill:'React',cost:55 },
+      { id:11,name:'Pranav Shetty',skill:'Data Science',cost:40 },
+      { id:12,name:'Devika Rao',skill:'Machine Learning',cost:60 }
+    ];
+
+    let currentTab = 'pending';
+    let bookFormOpen = false;
+
+    function getSessions() {
+      if (!currentUser) return [];
+      try { return JSON.parse(localStorage.getItem('loopstudy_sessions_' + currentUser.id)) || []; }
+      catch(e) { return []; }
+    }
+
+    function saveSessions(sessions) {
+      if (!currentUser) return;
+      localStorage.setItem('loopstudy_sessions_' + currentUser.id, JSON.stringify(sessions));
+    }
+
+    function getMentorById(id) {
+      return mentors.find(m => m.id === id);
+    }
+
+    function getStatusLabel(status) {
+      switch(status) {
+        case 'pending': return 'Pending'; case 'confirmed': return 'Confirmed';
+        case 'completed': return 'Completed'; case 'cancelled': return 'Cancelled';
+        default: return status;
+      }
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      renderSessions();
+    }
+
+    function renderSessions() {
+      const container = document.getElementById('sessionCards');
+      const all = getSessions();
+
+      const pendingCount = all.filter(s => s.status === 'pending').length;
+      const upcomingCount = all.filter(s => s.status === 'confirmed').length;
+      const completedCount = all.filter(s => s.status === 'completed' || s.status === 'cancelled').length;
+      document.getElementById('pendingCount').textContent = pendingCount;
+      document.getElementById('upcomingCount').textContent = upcomingCount;
+      document.getElementById('completedCount').textContent = completedCount;
+
+      let filtered = [];
+      if (currentTab === 'pending') filtered = all.filter(s => s.status === 'pending');
+      else if (currentTab === 'upcoming') filtered = all.filter(s => s.status === 'confirmed');
+      else filtered = all.filter(s => s.status === 'completed' || s.status === 'cancelled');
+
+      if (filtered.length === 0) {
+        const msgs = { pending:'No pending sessions.', upcoming:'No upcoming sessions.', completed:'No completed sessions.' };
+        container.innerHTML = '<div class="empty-sessions"><span class="empty-sessions-icon">📅</span><p>'+msgs[currentTab]+'</p></div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(s => {
+        const m = getMentorById(parseInt(s.mentorId));
+        const mentorName = s.mentorName || m?.name || 'Unknown';
+        const skill = s.skill || m?.skill || '';
+        const avatar = 'https://ui-avatars.com/api/?name='+encodeURIComponent(mentorName)+'&background=6C63FF&color=fff';
+
+        let badgeClass = 'pending';
+        if (s.status === 'confirmed') badgeClass = 'approved';
+        else if (s.status === 'completed') badgeClass = 'completed';
+        else if (s.status === 'cancelled') badgeClass = 'cancelled';
+
+        let actions = '';
+        if (s.status === 'pending') {
+          actions = '<button class="btn btn-success btn-sm" onclick="updateSession(\''+s.id+'\',\'confirmed\')">Approve</button><button class="btn btn-danger btn-sm" onclick="updateSession(\''+s.id+'\',\'cancelled\')">Cancel</button>';
+        } else if (s.status === 'confirmed') {
+          actions = '<button class="btn btn-success btn-sm" onclick="updateSession(\''+s.id+'\',\'completed\')">Mark Complete</button><button class="btn btn-danger btn-sm" onclick="updateSession(\''+s.id+'\',\'cancelled\')">Cancel</button>';
+        }
+
+        return '<div class="session-card"><img class="session-avatar" src="'+avatar+'" alt="'+mentorName+'"><div class="session-info"><div class="session-mentor-name">'+mentorName+'</div><div class="session-skill">'+skill+'</div><div class="session-detail"><span>📅 '+s.date+'</span><span>🕐 '+s.timeSlot+'</span><span class="status-badge '+badgeClass+'">'+getStatusLabel(s.status)+'</span></div></div><div class="session-actions">'+actions+'</div></div>';
+      }).join('');
+    }
+
+    function updateSession(sessionId, newStatus) {
+      const all = getSessions();
+      const idx = all.findIndex(s => s.id === sessionId);
+      if (idx === -1) return;
+      all[idx].status = newStatus;
+      saveSessions(all);
+
+      // If completed, add skill points
+      if (newStatus === 'completed') {
+        const session = all[idx];
+        const m = getMentorById(parseInt(session.mentorId));
+        if (m && currentUser) {
+          const profileKey = 'loopstudy_profile_' + currentUser.id;
+          const profile = JSON.parse(localStorage.getItem(profileKey));
+          if (profile) {
+            profile.skillPoints = (profile.skillPoints || 0) + m.cost;
+            profile.level = Math.min(Math.floor(profile.skillPoints / 500) + 1, 5);
+            profile.sessionsCompleted = (profile.sessionsCompleted || 0) + 1;
+            if (!profile.transactions) profile.transactions = [];
+            profile.transactions.push({
+              id: Date.now().toString(36)+'_'+Math.random().toString(36).substring(2,9),
+              type: 'earned', amount: m.cost,
+              reason: 'Completed session with ' + session.mentorName,
+              date: new Date().toISOString(), source: 'session'
+            });
+            localStorage.setItem(profileKey, JSON.stringify(profile));
+          }
+        }
+      }
+
+      renderSessions();
+    }
+
+    function toggleBookForm() {
+      bookFormOpen = !bookFormOpen;
+      document.getElementById('bookSection').classList.toggle('hidden', !bookFormOpen);
+      document.getElementById('showBookBtn').textContent = bookFormOpen ? '✕ Close' : '+ Book Session';
+      if (bookFormOpen) {
+        document.getElementById('sessionDate').valueAsDate = new Date();
+        // Set default date to tomorrow
+        const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('sessionDate').valueAsDate = tomorrow;
+      }
+    }
+
+    function initBookForm() {
+      const select = document.getElementById('mentorSelect');
+      select.innerHTML = '<option value="">Choose a mentor...</option>' +
+        mentors.map(m => '<option value="'+m.id+'" data-cost="'+m.cost+'">'+m.name+' ('+m.skill+') - ⭐'+m.cost+'pts</option>').join('');
+
+      // Check for ?mentor= query param
+      const params = new URLSearchParams(window.location.search);
+      const mentorId = params.get('mentor');
+      if (mentorId) {
+        select.value = mentorId;
+        updateCost();
+        toggleBookForm();
+      }
+
+      select.addEventListener('change', updateCost);
+    }
+
+    function updateCost() {
+      const select = document.getElementById('mentorSelect');
+      const opt = select.options[select.selectedIndex];
+      const cost = opt ? parseInt(opt.dataset.cost || 0) : 0;
+      document.getElementById('costDisplay').textContent = cost;
+    }
+
+    function bookSession() {
+      const mentorId = parseInt(document.getElementById('mentorSelect').value);
+      const date = document.getElementById('sessionDate').value;
+      const timeSlot = document.getElementById('timeSlotSelect').value;
+
+      if (!mentorId) { alert('Please select a mentor.'); return; }
+      if (!date) { alert('Please select a date.'); return; }
+      if (!timeSlot) { alert('Please select a time slot.'); return; }
+
+      const m = getMentorById(mentorId);
+      if (!m) { alert('Invalid mentor.'); return; }
+
+      // Check SkillPoints
+      if (currentUser) {
+        const profileKey = 'loopstudy_profile_' + currentUser.id;
+        const profile = JSON.parse(localStorage.getItem(profileKey));
+        if (profile && (profile.skillPoints || 0) < m.cost) {
+          alert('Insufficient SkillPoints! You need '+m.cost+' pts but have '+profile.skillPoints+' pts.');
+          return;
+        }
+        // Deduct points
+        if (profile) {
+          profile.skillPoints = (profile.skillPoints || 0) - m.cost;
+          profile.level = Math.min(Math.floor(profile.skillPoints / 500) + 1, 5);
+          if (!profile.transactions) profile.transactions = [];
+          profile.transactions.push({
+            id: Date.now().toString(36)+'_'+Math.random().toString(36).substring(2,9),
+            type: 'spent', amount: m.cost,
+            reason: 'Booked session with ' + m.name,
+            date: new Date().toISOString(), source: 'session-booking'
+          });
+          localStorage.setItem(profileKey, JSON.stringify(profile));
+        }
+      }
+
+      const sessions = getSessions();
+      const newSession = {
+        id: Date.now().toString(36) + '_' + Math.random().toString(36).substring(2,9),
+        studentId: currentUser?.id || '',
+        mentorId: mentorId.toString(),
+        mentorName: m.name,
+        skill: m.skill,
+        date: date,
+        timeSlot: timeSlot,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+      sessions.push(newSession);
+      saveSessions(sessions);
+
+      toggleBookForm();
+      renderSessions();
+      switchTab('pending');
+      alert('Session booked successfully!');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initBookForm();
+      renderSessions();
+    });
+  </script>
+</body>
+</html>

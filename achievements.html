@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoopStudy — Achievements</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .page-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .summary-bar {
+      background: var(--dark2);
+      border-radius: 14px;
+      padding: 20px 24px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .summary-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+
+    .summary-info {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .summary-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0 0 4px;
+    }
+
+    .summary-count {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0 0 8px;
+    }
+
+    .summary-progress {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .achievement-points-total {
+      font-size: 14px;
+      color: var(--warning);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 18px;
+    }
+
+    .badge-card { position: relative; }
+
+    .current-user-highlight {
+      background: rgba(255, 214, 0, 0.08);
+      border-color: rgba(255, 214, 0, 0.3);
+    }
+    .current-user-highlight:hover {
+      border-color: rgba(255, 214, 0, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      .summary-bar { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="navbar">
+      <a href="dashboard.html" class="navbar-brand">LoopStudy</a>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">&#9776;</button>
+      <ul class="navbar-links" id="navbarLinks">
+        <li><a href="dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="skills.html" class="navbar-link">Skills</a></li>
+        <li><a href="mentors.html" class="navbar-link">Mentors</a></li>
+        <li><a href="challenges.html" class="navbar-link">Challenges</a></li>
+        <li><a href="achievements.html" class="navbar-link active">Achievements</a></li>
+        <li><a href="rewards.html" class="navbar-link">Rewards</a></li>
+        <li><a href="leaderboard.html" class="navbar-link">Leaderboard</a></li>
+      </ul>
+      <div class="navbar-right" id="navbarRight"></div>
+    </nav>
+
+    <main class="main-content">
+      <div class="page">
+        <div class="page-container">
+          <header class="page-header">
+            <h1 class="page-title">Achievements</h1>
+            <p class="page-subtitle">Track your progress and unlock rewards</p>
+          </header>
+
+          <div style="display:flex;justify-content:center;">
+            <div class="tab-group" role="tablist">
+              <button class="tab-btn active" data-tab="badges" role="tab">Badges</button>
+              <button class="tab-btn" data-tab="achievements" role="tab">Achievements</button>
+            </div>
+          </div>
+
+          <div id="badgesTab" class="tab-content active">
+            <div class="summary-bar" id="badgesSummary"></div>
+
+            <div class="page-section-header">
+              <div class="filter-group" id="badgesFilters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="unlocked">Unlocked</button>
+                <button class="filter-btn" data-filter="locked">Locked</button>
+              </div>
+            </div>
+
+            <div class="grid-auto-fill" id="badgesGrid"></div>
+          </div>
+
+          <div id="achievementsTab" class="tab-content">
+            <div class="summary-bar" id="achievementsSummary"></div>
+
+            <div class="page-section-header">
+              <div class="filter-group" id="achievementsFilters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="unlocked">Unlocked</button>
+                <button class="filter-btn" data-filter="locked">Locked</button>
+              </div>
+            </div>
+
+            <div id="achievementsList"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <div>
+          <a href="dashboard.html" class="footer-brand">LoopStudy</a>
+          <p class="footer-desc">Learn, Assess, Earn and Grow. Master in-demand skills with interactive learning paths, mentorship, and gamified challenges.</p>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="dashboard.html" class="footer-link">Dashboard</a></li>
+            <li><a href="skills.html" class="footer-link">Skill Paths</a></li>
+            <li><a href="mentors.html" class="footer-link">Mentors</a></li>
+            <li><a href="leaderboard.html" class="footer-link">Leaderboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Resources</h4>
+          <ul class="footer-links">
+            <li><a href="challenges.html" class="footer-link">Challenges</a></li>
+            <li><a href="rewards.html" class="footer-link">Rewards Store</a></li>
+            <li><a href="achievements.html" class="footer-link">Achievements</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Support</h4>
+          <ul class="footer-links">
+            <li><a href="#" class="footer-link">Help Center</a></li>
+            <li><a href="#" class="footer-link">Privacy Policy</a></li>
+            <li><a href="#" class="footer-link">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; 2025 LoopStudy. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { Store } from './js/storage.js';
+
+    const user = Store.getCurrentUser();
+    if (!user) { window.location.href = 'login.html'; throw new Error('Not authenticated'); }
+
+    const userId = user.id;
+    const userData = Store.getUserData(userId);
+    const badges = Store.getBadges(userId);
+    const achievements = Store.getAchievements(userId);
+
+    const unlockedBadges = badges.filter(b => b.unlocked);
+    const unlockedAchievements = achievements.filter(a => a.unlocked);
+    const totalPointsEarned = unlockedAchievements.reduce((sum, a) => sum + (a.skillPoints || 0), 0);
+
+    function renderNavbar() {
+      const right = document.getElementById('navbarRight');
+      right.innerHTML = `
+        <div class="navbar-user">
+          <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name)}" alt="" class="navbar-avatar">
+          <span class="navbar-username">${user.name}</span>
+          <span class="navbar-points">⭐ ${userData?.skillPoints || 0}</span>
+        </div>
+      `;
+    }
+    renderNavbar();
+
+    document.getElementById('hamburgerBtn').addEventListener('click', () => {
+      document.getElementById('navbarLinks').classList.toggle('open');
+    });
+
+    function renderBadges(filter = 'all') {
+      const filtered = badges.filter(b => {
+        if (filter === 'unlocked') return b.unlocked;
+        if (filter === 'locked') return !b.unlocked;
+        return true;
+      });
+      const grid = document.getElementById('badgesGrid');
+      if (filtered.length === 0) {
+        grid.innerHTML = '<p class="no-data">No badges match this filter.</p>';
+        return;
+      }
+      grid.innerHTML = filtered.map(b => `
+        <div class="badge-card ${b.unlocked ? 'unlocked' : 'locked'}">
+          ${b.unlocked ? '<div class="badge-check">&#9989;</div>' : ''}
+          <div class="badge-icon">${b.icon}</div>
+          <div class="badge-name">${b.name}</div>
+          <p class="badge-desc">${b.description}</p>
+          <span class="badge-status ${b.unlocked ? 'unlocked' : 'locked'}">
+            ${b.unlocked ? 'Unlocked' : 'Locked'}
+          </span>
+          ${b.unlockedDate ? `<span style="font-size:11px;color:var(--text-muted);">${new Date(b.unlockedDate).toLocaleDateString()}</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderAchievements(filter = 'all') {
+      const filtered = achievements.filter(a => {
+        if (filter === 'unlocked') return a.unlocked;
+        if (filter === 'locked') return !a.unlocked;
+        return true;
+      });
+      const list = document.getElementById('achievementsList');
+      if (filtered.length === 0) {
+        list.innerHTML = '<p class="no-data">No achievements match this filter.</p>';
+        return;
+      }
+      list.innerHTML = filtered.map(a => {
+        const iconBg = a.unlocked ? 'rgba(0,200,83,0.15)' : 'var(--border)';
+        return `
+          <div class="achievement-card" style="${a.unlocked ? '' : 'opacity:0.6;'}">
+            <div class="achievement-icon" style="background:${iconBg};">${a.icon}</div>
+            <div class="achievement-info">
+              <div class="achievement-name">${a.name} ${a.unlocked ? '&#9989;' : ''}</div>
+              <p class="achievement-desc">${a.description}</p>
+            </div>
+            <div class="achievement-points">⭐ ${a.skillPoints}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderBadgesSummary() {
+      const el = document.getElementById('badgesSummary');
+      const pct = totalBadges > 0 ? Math.round((unlockedBadges.length / totalBadges) * 100) : 0;
+      el.innerHTML = `
+        <div class="summary-icon">&#127941;</div>
+        <div class="summary-info">
+          <div class="summary-title">Badges Unlocked</div>
+          <div class="summary-count">${unlockedBadges.length}/${badges.length} unlocked</div>
+        </div>
+        <div class="summary-progress">
+          <div class="progress-bar">
+            <div class="progress-bar-fill ${pct === 100 ? 'success' : ''}" style="width:${pct}%"></div>
+          </div>
+          <div class="progress-bar-label">
+            <span class="progress-bar-text">${pct}% complete</span>
+            <span class="progress-bar-percent">${unlockedBadges.length}/${badges.length}</span>
+          </div>
+        </div>
+      `;
+    }
+    const totalBadges = badges.length;
+    renderBadgesSummary();
+
+    function renderAchievementsSummary() {
+      const el = document.getElementById('achievementsSummary');
+      const pct = totalAchievements > 0 ? Math.round((unlockedAchievements.length / totalAchievements) * 100) : 0;
+      el.innerHTML = `
+        <div class="summary-icon">&#11088;</div>
+        <div class="summary-info">
+          <div class="summary-title">Achievements Unlocked</div>
+          <div class="summary-count">${unlockedAchievements.length}/${achievements.length} unlocked</div>
+        </div>
+        <div class="summary-progress">
+          <div class="progress-bar">
+            <div class="progress-bar-fill ${pct === 100 ? 'success' : ''}" style="width:${pct}%"></div>
+          </div>
+          <div class="progress-bar-label">
+            <span class="progress-bar-text">${pct}% complete</span>
+            <span class="progress-bar-percent">${unlockedAchievements.length}/${achievements.length}</span>
+          </div>
+        </div>
+        <div class="achievement-points-total">Total: ⭐ ${totalPointsEarned}</div>
+      `;
+    }
+    const totalAchievements = achievements.length;
+    renderAchievementsSummary();
+
+    renderBadges('all');
+    renderAchievements('all');
+
+    document.querySelectorAll('[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(btn.dataset.tab + 'Tab').classList.add('active');
+      });
+    });
+
+    function setupFilters(containerId, renderFn) {
+      const container = document.getElementById(containerId);
+      container.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          container.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderFn(btn.dataset.filter);
+        });
+      });
+    }
+    setupFilters('badgesFilters', renderBadges);
+    setupFilters('achievementsFilters', renderAchievements);
+  </script>
+</body>
+</html>

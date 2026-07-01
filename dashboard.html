@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - LoopStudy</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+  <div class="app">
+    <nav class="navbar" id="navbar"></nav>
+
+    <div class="dashboard-page">
+      <div class="dashboard-container" id="appContent">
+        <div class="page-loader" id="pageLoader">
+          <div class="loader-spinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer" id="footer"></footer>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    const currentUser = (function() {
+      try { return JSON.parse(localStorage.getItem('loopstudy_currentUser')); }
+      catch { return null; }
+    })();
+    if (!currentUser) { window.location.replace('login.html'); }
+
+    const userId = currentUser.id;
+    const profileKey = 'loopstudy_profile_' + userId;
+    const badgesKey = 'loopstudy_badges_' + userId;
+    const challengesKey = 'loopstudy_challenges_' + userId;
+
+    function lsGet(key) {
+      try { return JSON.parse(localStorage.getItem(key)); }
+      catch { return null; }
+    }
+
+    function lsSet(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+      catch { return false; }
+    }
+
+    function getProfile() {
+      let data = lsGet(profileKey);
+      if (!data) {
+        data = {
+          profile: {
+            name: currentUser.name || '',
+            email: currentUser.email || '',
+            college: currentUser.college || '',
+            skills: currentUser.skills || [],
+            bio: '',
+            avatar: currentUser.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name || 'U'),
+            mentorStatus: currentUser.mentorStatus || false,
+          },
+          skillPoints: 0,
+          level: 1,
+          streak: { current: 0, best: 0, lastActive: null },
+          sessionsCompleted: 0,
+          assessmentsCompleted: 0,
+          transactions: [],
+        };
+        lsSet(profileKey, data);
+      }
+      return data;
+    }
+
+    const profileData = getProfile();
+    const p = profileData.profile || {};
+    const transactions = profileData.transactions || [];
+    const badges = lsGet(badgesKey) || [];
+    const challenges = lsGet(challengesKey) || { dailyChallenges: [], weeklyChallenges: [] };
+
+    const skillPaths = [
+      { id: 'python-basics', name: 'Python Basics', skill: 'Python', modules: ['Variables & Data Types', 'Control Flow', 'Functions', 'OOP', 'File I/O'], description: 'Learn Python from scratch. Master variables, control flow, functions, object-oriented programming, and file handling.', icon: '&#x1F40D;' },
+      { id: 'java-basics', name: 'Java Basics', skill: 'Java', modules: ['Syntax & Basics', 'OOP Concepts', 'Collections', 'Exception Handling'], description: 'Dive into Java programming. Understand syntax, object-oriented principles, collections framework, and error handling.', icon: '&#x2615;' },
+      { id: 'web-dev-basics', name: 'Web Development Basics', skill: 'Web Development', modules: ['HTML & CSS', 'JavaScript', 'Responsive Design'], description: 'Build modern websites. Learn HTML, CSS, JavaScript, and responsive design techniques.', icon: '&#x1F310;' },
+      { id: 'react-basics', name: 'React Basics', skill: 'React', modules: ['JSX & Components', 'State & Props', 'Hooks', 'Routing'], description: 'Build dynamic UIs with React. Master components, state management, hooks, and routing.', cost: 200, icon: '&#x2699;&#xFE0F;' },
+      { id: 'data-science', name: 'Data Science Fundamentals', skill: 'Data Science', modules: ['NumPy', 'Pandas', 'Matplotlib', 'Statistics'], description: 'Analyze data with Python. Learn NumPy, Pandas, visualization, and statistical analysis.', cost: 300, icon: '&#x1F4CA;' },
+      { id: 'ml-basics', name: 'Machine Learning Basics', skill: 'Machine Learning', modules: ['Supervised Learning', 'Unsupervised Learning', 'Neural Networks', 'Model Evaluation'], description: 'Enter the world of ML. Cover supervised/unsupervised learning, neural networks, and model evaluation.', cost: 400, icon: '&#x1F916;' },
+    ];
+
+    function showToast(message, type) {
+      var container = document.getElementById('toastContainer');
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + (type || 'info');
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(function() { toast.remove(); }, 3500);
+    }
+
+    function formatDate(iso) {
+      var d = new Date(iso);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function getStreakValue() {
+      return (profileData.streak && profileData.streak.current) || 0;
+    }
+
+    function getLevel() {
+      return profileData.level || 1;
+    }
+
+    function getSkillPoints() {
+      return profileData.skillPoints || 0;
+    }
+
+    function getSessionsCompleted() {
+      return profileData.sessionsCompleted || 0;
+    }
+
+    function getAssessmentsCompleted() {
+      return profileData.assessmentsCompleted || 0;
+    }
+
+    function getBadgesCount() {
+      if (!badges || !badges.length) return 0;
+      return badges.filter(function(b) { return b.unlocked; }).length;
+    }
+
+    function animateCounter(el, target) {
+      var start = 0;
+      var duration = 1000;
+      var startTime = null;
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        el.textContent = Math.floor(progress * target);
+        if (progress < 1) { requestAnimationFrame(step); }
+        else { el.textContent = target; }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function renderNav() {
+      var links = [
+        { label: 'Dashboard', href: 'dashboard.html', icon: '&#x1F3E0;' },
+        { label: 'Profile', href: 'profile.html', icon: '&#x1F464;' },
+        { label: 'Mentors', href: 'mentors.html', icon: '&#x1F468;&#x200D;&#x1F393;' },
+        { label: 'Sessions', href: 'sessions.html', icon: '&#x1F4C5;' },
+        { label: 'Assessments', href: 'assessments.html', icon: '&#x1F9EA;' },
+        { label: 'Achievements', href: 'achievements.html', icon: '&#x1F3C6;' },
+        { label: 'Rewards', href: 'rewards.html', icon: '&#x1F381;' },
+        { label: 'Leaderboard', href: 'leaderboard.html', icon: '&#x1F3C6;' },
+        { label: 'Growth Center', href: 'growth-center.html', icon: '&#x1F331;' },
+        { label: 'Settings', href: 'settings.html', icon: '&#x2699;&#xFE0F;' },
+      ];
+      var html = '<a href="dashboard.html" class="navbar-brand">&#x1F4A1; LoopStudy</a>';
+      html += '<button class="hamburger-btn" onclick="toggleNav()">&#x2630;</button>';
+      html += '<ul class="navbar-links" id="navLinks">';
+      for (var i = 0; i < links.length; i++) {
+        var active = links[i].href === 'dashboard.html' ? ' active' : '';
+        html += '<li><a href="' + links[i].href + '" class="navbar-link' + active + '">' + links[i].icon + ' ' + links[i].label + '</a></li>';
+      }
+      html += '</ul>';
+      html += '<div class="navbar-right">';
+      html += '<div class="navbar-user" onclick="window.location=\'profile.html\'">';
+      html += '<img class="navbar-avatar" src="' + (p.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(p.name || 'U')) + '" alt="Avatar">';
+      html += '<span class="navbar-username">' + (p.name || 'User') + '</span>';
+      html += '<span class="navbar-points">&#x2B50; ' + getSkillPoints() + '</span>';
+      html += '</div>';
+      html += '<button class="btn btn-outline btn-sm" onclick="handleLogout()">Logout</button>';
+      html += '</div>';
+      document.getElementById('navbar').innerHTML = html;
+    }
+
+    function toggleNav() {
+      document.getElementById('navLinks').classList.toggle('open');
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('loopstudy_currentUser');
+      window.location.replace('login.html');
+    }
+
+    function renderFooter() {
+      var html = '<div class="footer-container">';
+      html += '<div><a href="dashboard.html" class="footer-brand">&#x1F4A1; LoopStudy</a><p class="footer-desc">Empowering students to learn, connect, and grow through peer-to-peer mentorship and skill-building.</p></div>';
+      html += '<div><h4 class="footer-section-title">Quick Links</h4><ul class="footer-links"><li><a href="dashboard.html" class="footer-link">Dashboard</a></li><li><a href="mentors.html" class="footer-link">Mentors</a></li><li><a href="sessions.html" class="footer-link">Sessions</a></li><li><a href="leaderboard.html" class="footer-link">Leaderboard</a></li></ul></div>';
+      html += '<div><h4 class="footer-section-title">Resources</h4><ul class="footer-links"><li><a href="assessments.html" class="footer-link">Assessments</a></li><li><a href="achievements.html" class="footer-link">Achievements</a></li><li><a href="growth-center.html" class="footer-link">Growth Center</a></li><li><a href="rewards.html" class="footer-link">Rewards</a></li></ul></div>';
+      html += '<div><h4 class="footer-section-title">Support</h4><ul class="footer-links"><li><a href="settings.html" class="footer-link">Settings</a></li><li><a href="profile.html" class="footer-link">Profile</a></li></ul></div>';
+      html += '</div>';
+      html += '<div class="footer-bottom"><span class="footer-copy">&copy; 2025 LoopStudy. All rights reserved.</span><div class="footer-social"><a href="#">&#x1F426;</a><a href="#">&#x1F4F1;</a><a href="#">&#x1F4F8;</a></div></div>';
+      document.getElementById('footer').innerHTML = html;
+    }
+
+    function renderDashboard() {
+      var container = document.getElementById('appContent');
+
+      // Welcome Card
+      var welcomeHtml = '<div class="welcome-card">';
+      welcomeHtml += '<div class="welcome-info">';
+      welcomeHtml += '<div>';
+      welcomeHtml += '<h1 class="welcome-title">Welcome back, ' + (p.name || 'User') + '!</h1>';
+      welcomeHtml += '<div class="welcome-meta">';
+      welcomeHtml += '<div class="level-badge">' + getLevel() + '</div>';
+      welcomeHtml += '<span class="streak-badge">&#x1F525; ' + getStreakValue() + ' day streak</span>';
+      welcomeHtml += '<span class="skill-points-badge">&#x2B50; ' + getSkillPoints() + ' SkillPoints</span>';
+      welcomeHtml += '</div></div></div></div>';
+
+      // Stats Grid
+      var statsHtml = '<div class="stats-grid-dash" id="statsGrid">';
+      var stats = [
+        { icon: '&#x1F4C5;', label: 'Sessions Completed', value: getSessionsCompleted(), bg: 'rgba(108,99,255,0.15)' },
+        { icon: '&#x1F9EA;', label: 'Assessments Completed', value: getAssessmentsCompleted(), bg: 'rgba(255,107,107,0.15)' },
+        { icon: '&#x1F3C6;', label: 'Badges Earned', value: getBadgesCount(), bg: 'rgba(255,214,0,0.15)' },
+        { icon: '&#x1F4C8;', label: 'Current Level', value: getLevel(), bg: 'rgba(0,200,83,0.15)' },
+      ];
+      for (var si = 0; si < stats.length; si++) {
+        statsHtml += '<div class="stat-card"><div class="stat-card-icon" style="background:' + stats[si].bg + '">' + stats[si].icon + '</div><div class="stat-card-info"><span class="stat-card-value" id="statVal' + si + '">0</span><span class="stat-card-label">' + stats[si].label + '</span></div></div>';
+      }
+      statsHtml += '</div>';
+
+      // Quick Actions
+      var qaHtml = '<div class="quick-actions-grid">';
+      var qaItems = [
+        { icon: '&#x1F4C5;', label: 'Book a Session', href: 'sessions.html', bg: 'linear-gradient(135deg, rgba(108,99,255,0.2), rgba(108,99,255,0.05))' },
+        { icon: '&#x1F9EA;', label: 'Take Assessment', href: 'assessments.html', bg: 'linear-gradient(135deg, rgba(255,107,107,0.2), rgba(255,107,107,0.05))' },
+        { icon: '&#x1F3C6;', label: 'View Achievements', href: 'achievements.html', bg: 'linear-gradient(135deg, rgba(255,214,0,0.2), rgba(255,214,0,0.05))' },
+        { icon: '&#x1F468;&#x200D;&#x1F393;', label: 'Browse Mentors', href: 'mentors.html', bg: 'linear-gradient(135deg, rgba(0,200,83,0.2), rgba(0,200,83,0.05))' },
+      ];
+      for (var qi = 0; qi < qaItems.length; qi++) {
+        qaHtml += '<a href="' + qaItems[qi].href + '" class="quick-action-card"><div class="quick-action-icon" style="background:' + qaItems[qi].bg + '">' + qaItems[qi].icon + '</div><span class="quick-action-label">' + qaItems[qi].label + '</span></a>';
+      }
+      qaHtml += '</div>';
+
+      // Activity & Challenges Grid
+      var gridHtml = '<div class="dashboard-grid">';
+
+      // Recent Activity
+      gridHtml += '<div class="dashboard-section">';
+      gridHtml += '<h2 class="section-title">&#x1F4CB; Recent Activity</h2>';
+      gridHtml += '<div class="activity-feed" id="activityFeed">';
+      var recentTxns = transactions.slice(-5).reverse();
+      if (recentTxns.length === 0) {
+        gridHtml += '<div class="empty-state"><span class="empty-icon">&#x1F4ED;</span><p>No recent activity yet</p></div>';
+      } else {
+        for (var ti = 0; ti < recentTxns.length; ti++) {
+          var t = recentTxns[ti];
+          var dotClass = t.type === 'earned' ? 'earned' : 'spent';
+          var sign = t.type === 'earned' ? '+' : '-';
+          gridHtml += '<div class="activity-item"><div class="activity-dot ' + dotClass + '"></div><div class="activity-content"><span class="activity-text">' + (t.reason || 'Activity') + '</span><span class="activity-date">' + formatDate(t.date) + '</span></div><span class="activity-amount ' + dotClass + '">' + sign + ' ' + t.amount + ' pts</span></div>';
+        }
+      }
+      gridHtml += '</div></div>';
+
+      // Daily Challenges
+      gridHtml += '<div class="dashboard-section">';
+      gridHtml += '<h2 class="section-title">&#x1F3AF; Daily Challenges</h2>';
+      gridHtml += '<div class="challenges-section-dash" id="dailyChallenges">';
+      var daily = challenges.dailyChallenges || [];
+      var incompleteDaily = daily.filter(function(c) { return !c.completed; });
+      if (incompleteDaily.length === 0) {
+        gridHtml += '<div class="empty-state"><span class="empty-icon">&#x2705;</span><p>All daily challenges completed! Great job!</p></div>';
+      } else {
+        for (var di = 0; di < incompleteDaily.length; di++) {
+          var c = incompleteDaily[di];
+          gridHtml += '<div class="challenge-card"><div class="challenge-icon" style="background:rgba(108,99,255,0.15)">&#x26A1;</div><div class="challenge-info"><h4 class="challenge-title">' + c.title + '</h4><p class="challenge-desc">' + (c.description || '') + '</p><span class="challenge-reward">&#x2B50; ' + c.reward + ' pts</span></div><button class="btn btn-primary btn-sm" onclick="completeChallenge(\'' + c.id + '\',\'daily\')">Complete</button></div>';
+        }
+      }
+      // Weekly Challenges
+      gridHtml += '<h3 class="sub-section-title">Weekly Challenges</h3>';
+      var weekly = challenges.weeklyChallenges || [];
+      var incompleteWeekly = weekly.filter(function(c) { return !c.completed; });
+      if (incompleteWeekly.length === 0) {
+        gridHtml += '<div class="empty-state"><span class="empty-icon">&#x2705;</span><p>All weekly challenges completed! Great job!</p></div>';
+      } else {
+        for (var wi = 0; wi < incompleteWeekly.length; wi++) {
+          var wc = incompleteWeekly[wi];
+          gridHtml += '<div class="challenge-card"><div class="challenge-icon" style="background:rgba(255,214,0,0.15)">&#x1F31F;</div><div class="challenge-info"><h4 class="challenge-title">' + wc.title + '</h4><p class="challenge-desc">' + (wc.description || '') + '</p><span class="challenge-reward">&#x2B50; ' + wc.reward + ' pts</span></div><button class="btn btn-primary btn-sm" onclick="completeChallenge(\'' + wc.id + '\',\'weekly\')">Complete</button></div>';
+        }
+      }
+      gridHtml += '</div></div></div>'; // end challenges section + dashboard-grid
+
+      // Skill Paths
+      var pathsHtml = '<div class="dashboard-section full-width">';
+      pathsHtml += '<h2 class="section-title">&#x1F9F0; Recommended Skill Paths</h2>';
+      pathsHtml += '<div class="skill-paths-dash">';
+      var unlockedPaths = skillPaths.filter(function(sp) { return !sp.cost || sp.cost <= 0; });
+      var shownPaths = unlockedPaths.slice(0, 3);
+      for (var pi = 0; pi < shownPaths.length; pi++) {
+        var sp = shownPaths[pi];
+        pathsHtml += '<div class="skill-path-card">';
+        pathsHtml += '<div class="skill-path-header"><div><h3 class="skill-path-name">' + sp.icon + ' ' + sp.name + '</h3><span class="skill-path-skill">' + sp.skill + '</span></div></div>';
+        pathsHtml += '<p class="skill-path-desc">' + sp.description + '</p>';
+        pathsHtml += '<div class="skill-path-modules">';
+        for (var mi = 0; mi < sp.modules.length; mi++) {
+          pathsHtml += '<span class="module-pill">' + sp.modules[mi] + '</span>';
+        }
+        pathsHtml += '</div>';
+        pathsHtml += '<a href="#" class="skill-path-link">View Path &#x2192;</a>';
+        pathsHtml += '</div>';
+      }
+      pathsHtml += '</div></div>';
+
+      container.innerHTML = welcomeHtml + statsHtml + qaHtml + gridHtml + pathsHtml;
+
+      // Animate stat counters
+      var statValues = [getSessionsCompleted(), getAssessmentsCompleted(), getBadgesCount(), getLevel()];
+      for (var ani = 0; ani < 4; ani++) {
+        var el = document.getElementById('statVal' + ani);
+        if (el) animateCounter(el, statValues[ani]);
+      }
+    }
+
+    function completeChallenge(id, type) {
+      var data = lsGet(challengesKey) || { dailyChallenges: [], weeklyChallenges: [] };
+      var reward = 0;
+      if (type === 'daily') {
+        data.dailyChallenges = data.dailyChallenges.map(function(c) {
+          if (c.id === id && !c.completed) { reward = c.reward; return { ...c, completed: true, progress: 1 }; }
+          return c;
+        });
+      } else {
+        data.weeklyChallenges = data.weeklyChallenges.map(function(c) {
+          if (c.id === id && !c.completed) { reward = c.reward; return { ...c, completed: true, progress: 1 }; }
+          return c;
+        });
+      }
+      if (reward > 0) {
+        lsSet(challengesKey, data);
+        var prof = getProfile();
+        prof.skillPoints = (prof.skillPoints || 0) + reward;
+        prof.transactions.push({
+          id: Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 9),
+          type: 'earned',
+          amount: reward,
+          reason: 'Completed ' + type + ' challenge',
+          date: new Date().toISOString(),
+          source: 'challenge-reward',
+        });
+        lsSet(profileKey, prof);
+        showToast('Challenge completed! +' + reward + ' pts', 'success');
+        setTimeout(function() { window.location.reload(); }, 800);
+      }
+    }
+
+    renderNav();
+    renderFooter();
+    renderDashboard();
+  </script>
+</body>
+</html>

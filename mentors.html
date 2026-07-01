@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mentor Marketplace - LoopStudy</title>
+  <link rel="icon" href="../assets/favicon.png" />
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .mentors-page { padding: 24px; margin-top: 64px; min-height: 100vh; background: var(--dark); }
+    .mentors-container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .controls-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .controls-row .search-input { max-width: 400px; flex: 1; min-width: 200px; }
+    .mentors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+    .mentor-card-detailed { background: var(--dark2); border-radius: 16px; padding: 24px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; transition: all 0.3s ease; cursor: default; }
+    .mentor-card-detailed:hover { transform: translateY(-4px); border-color: rgba(108,99,255,0.27); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .mentor-card-top { display: flex; align-items: flex-start; gap: 16px; }
+    .mentor-avatar-lg { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); flex-shrink: 0; }
+    .mentor-info { flex: 1; min-width: 0; }
+    .mentor-name { font-size: 17px; font-weight: 600; color: #fff; margin: 0 0 2px; }
+    .mentor-skill { font-size: 13px; color: var(--primary); font-weight: 500; margin: 0; }
+    .mentor-stars { color: var(--warning); font-size: 13px; margin-top: 4px; }
+    .mentor-rating-num { color: var(--text-muted); font-size: 13px; }
+    .mentor-cost-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; background: rgba(255,214,0,0.15); color: var(--warning); }
+    .mentor-meta-row { display: flex; gap: 14px; font-size: 13px; color: var(--text-muted); flex-wrap: wrap; }
+    .mentor-meta-item { display: flex; align-items: center; gap: 4px; }
+    .mentor-college { font-size: 13px; color: var(--text-muted); }
+    .mentor-bio { font-size: 13px; color: #bbb; line-height: 1.5; margin: 0; }
+    .mentor-card-actions { display: flex; gap: 10px; margin-top: 4px; }
+    .view-profile-btn { padding: 8px 18px; border-radius: 10px; border: none; background: rgba(108,99,255,0.15); color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .view-profile-btn:hover { background: rgba(108,99,255,0.25); }
+
+    .modal-wide .modal-content { max-width: 640px; }
+    .modal-profile-top { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px; }
+    .modal-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); flex-shrink: 0; }
+    .modal-profile-info { flex: 1; }
+    .modal-profile-name { font-size: 22px; font-weight: 700; color: #fff; margin: 0 0 4px; }
+    .modal-profile-skill { font-size: 14px; color: var(--primary); font-weight: 500; }
+    .modal-profile-meta { display: flex; gap: 16px; margin-top: 8px; font-size: 13px; color: var(--text-muted); flex-wrap: wrap; }
+    .modal-profile-bio { font-size: 14px; color: #bbb; line-height: 1.6; margin: 0 0 20px; }
+    .reviews-section { margin-top: 16px; }
+    .reviews-title { font-size: 15px; font-weight: 600; color: #fff; margin: 0 0 12px; }
+    .review-item { background: var(--dark); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; border: 1px solid var(--border); }
+    .review-user { font-size: 13px; font-weight: 600; color: #fff; margin: 0 0 2px; }
+    .review-stars { color: var(--warning); font-size: 12px; }
+    .review-text { font-size: 13px; color: #aaa; margin: 4px 0 0; line-height: 1.4; }
+
+    .no-results { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .no-results-icon { font-size: 40px; margin-bottom: 12px; display: block; }
+
+    @media (max-width: 768px) {
+      .mentors-page { padding: 16px; }
+      .mentors-grid { grid-template-columns: 1fr; }
+      .controls-row .search-input { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <nav class="navbar">
+      <a class="navbar-brand" href="dashboard.html">LoopStudy</a>
+      <button class="hamburger-btn" onclick="document.querySelector('.navbar-links').classList.toggle('open')">☰</button>
+      <ul class="navbar-links">
+        <li><a class="navbar-link" href="dashboard.html">Dashboard</a></li>
+        <li><a class="navbar-link active" href="mentors.html">Mentors</a></li>
+        <li><a class="navbar-link" href="sessions.html">Sessions</a></li>
+        <li><a class="navbar-link" href="assessments.html">Assessments</a></li>
+        <li><a class="navbar-link" href="leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <div class="navbar-right">
+        <div class="navbar-user" onclick="location.href='profile.html'" style="cursor:pointer">
+          <img class="navbar-avatar" id="navAvatar" src="https://ui-avatars.com/api/?name=User" alt="">
+          <span class="navbar-username" id="navName">User</span>
+          <span class="navbar-points">⚡ <span id="navPoints">0</span></span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="mentors-page" id="mentorsPage">
+      <div class="mentors-container">
+        <div class="page-header">
+          <h1 class="page-title">Mentor Marketplace</h1>
+          <p class="page-subtitle">Connect with expert mentors for personalized guidance</p>
+        </div>
+
+        <div class="controls-row">
+          <input class="search-input" id="searchInput" type="text" placeholder="Search by name or skill..." oninput="filterMentors()">
+          <div class="filter-group" id="filterGroup">
+            <button class="filter-btn active" data-skill="All" onclick="setFilter('All')">All</button>
+            <button class="filter-btn" data-skill="Python" onclick="setFilter('Python')">Python</button>
+            <button class="filter-btn" data-skill="Java" onclick="setFilter('Java')">Java</button>
+            <button class="filter-btn" data-skill="Web Development" onclick="setFilter('Web Development')">Web Development</button>
+            <button class="filter-btn" data-skill="React" onclick="setFilter('React')">React</button>
+            <button class="filter-btn" data-skill="Data Science" onclick="setFilter('Data Science')">Data Science</button>
+            <button class="filter-btn" data-skill="Machine Learning" onclick="setFilter('Machine Learning')">ML</button>
+          </div>
+        </div>
+
+        <div class="mentors-grid" id="mentorsGrid"></div>
+      </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="mentorModal">
+      <div class="modal-content modal-wide" style="max-height:90vh;overflow-y:auto">
+        <div class="modal-header">
+          <h2 class="modal-title">Mentor Profile</h2>
+          <button class="modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+        <div class="modal-footer" id="modalFooter"></div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <div>
+          <span class="footer-brand">LoopStudy</span>
+          <p class="footer-desc">Learn, Assess, Earn and Grow with personalized mentorship and skill-based learning.</p>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Platform</h4>
+          <ul class="footer-links">
+            <li><a class="footer-link" href="dashboard.html">Dashboard</a></li>
+            <li><a class="footer-link" href="mentors.html">Mentors</a></li>
+            <li><a class="footer-link" href="assessments.html">Assessments</a></li>
+            <li><a class="footer-link" href="leaderboard.html">Leaderboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Support</h4>
+          <ul class="footer-links">
+            <li><a class="footer-link" href="#">Help Center</a></li>
+            <li><a class="footer-link" href="#">Privacy Policy</a></li>
+            <li><a class="footer-link" href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Connect</h4>
+          <ul class="footer-links">
+            <li><a class="footer-link" href="#">Twitter</a></li>
+            <li><a class="footer-link" href="#">Discord</a></li>
+            <li><a class="footer-link" href="#">GitHub</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy">© 2026 LoopStudy. All rights reserved.</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Auth guard
+    (function() {
+      try {
+        const user = JSON.parse(localStorage.getItem('loopstudy_currentUser'));
+        if (!user) { window.location.href = 'login.html'; return; }
+      } catch(e) { window.location.href = 'login.html'; return; }
+    })();
+
+    // Navbar update
+    (function updateNav() {
+      try {
+        const u = JSON.parse(localStorage.getItem('loopstudy_currentUser'));
+        if (u) {
+          document.getElementById('navName').textContent = u.name || 'User';
+          document.getElementById('navAvatar').src = u.avatar || 'https://ui-avatars.com/api/?name='+encodeURIComponent(u.name||'User');
+          const profileKey = 'loopstudy_profile_' + u.id;
+          const profile = JSON.parse(localStorage.getItem(profileKey));
+          if (profile) document.getElementById('navPoints').textContent = profile.skillPoints || 0;
+        }
+      } catch(e) {}
+    })();
+
+    const mentors = [
+      { id:1,name:'Arjun Sharma',skill:'Python',rating:4.8,exp:5,sessions:340,cost:50,college:'IIT Bombay',bio:'Expert Python mentor with a passion for teaching data structures and algorithms. Over 5 years of industry experience.',reviews:[{user:'Rahul K.',rating:5,text:'Amazing mentor! Very clear explanations.'},{user:'Priya M.',rating:4,text:'Great session, Arjun helped me understand complex topics.'},{user:'Amit S.',rating:5,text:'Highly recommend! Very patient and knowledgeable.'}] },
+      { id:2,name:'Neha Patel',skill:'Java',rating:4.6,exp:4,sessions:280,cost:45,college:'NIT Trichy',bio:'Java specialist with expertise in OOP, multithreading, and Spring framework. Makes coding fun and accessible.',reviews:[{user:'Sneha R.',rating:5,text:'Neha is a fantastic teacher!'},{user:'Vikram M.',rating:4,text:'Helped me ace my Java interview.'},{user:'Divya K.',rating:4,text:'Very structured approach to teaching.'}] },
+      { id:3,name:'Vikram Reddy',skill:'Web Development',rating:4.9,exp:6,sessions:510,cost:60,college:'IIIT Hyderabad',bio:'Full-stack web developer with 6 years of experience. Teaches HTML, CSS, JavaScript, Node.js, and modern frameworks.',reviews:[{user:'Anjali T.',rating:5,text:'Best web dev mentor out there!'},{user:'Rohit D.',rating:5,text:'Vikram made full-stack dev so easy to understand.'},{user:'Pooja S.',rating:5,text:'Excellent practical projects and guidance.'}] },
+      { id:4,name:'Sanya Gupta',skill:'React',rating:4.7,exp:3,sessions:190,cost:55,college:'DTU',bio:'Frontend expert specializing in React, Redux, and modern JavaScript. Loves building beautiful UIs.',reviews:[{user:'Karan M.',rating:5,text:'Sanya is amazing at explaining React concepts.'},{user:'Isha N.',rating:4,text:'Great mentor for frontend development.'},{user:'Ravi P.',rating:5,text:'Learned hooks and state management so easily!'}] },
+      { id:5,name:'Rohit Joshi',skill:'Data Science',rating:4.5,exp:4,sessions:220,cost:50,college:'IIT Kharagpur',bio:'Data scientist skilled in Python, Pandas, NumPy, and visualization. Helps turn data into insights.',reviews:[{user:'Meera K.',rating:4,text:'Rohit explained data science concepts very clearly.'},{user:'Arun V.',rating:5,text:'Great practical approach to data analysis.'},{user:'Neha G.',rating:4,text:'Very helpful sessions on Pandas.'}] },
+      { id:6,name:'Ananya Mishra',skill:'Machine Learning',rating:4.9,exp:5,sessions:370,cost:65,college:'IIT Madras',bio:'ML engineer and researcher. Teaches algorithms, neural networks, and deep learning with practical projects.',reviews:[{user:'Siddharth R.',rating:5,text:'Ananya is a genius! Made ML so approachable.'},{user:'Kavya L.',rating:5,text:'Her explanations of neural networks are incredible.'},{user:'Manish T.',rating:5,text:'Best ML mentor I have ever had.'}] },
+      { id:7,name:'Karthik Nair',skill:'Python',rating:4.4,exp:3,sessions:150,cost:40,college:'VIT Vellore',bio:'Python enthusiast focusing on automation, scripting, and basic to intermediate programming concepts.',reviews:[{user:'Riya S.',rating:4,text:'Very patient mentor for Python beginners.'},{user:'Ajay K.',rating:5,text:'Great at explaining basic concepts.'},{user:'Nithya P.',rating:4,text:'Helped me with my college projects.'}] },
+      { id:8,name:'Shreya Deshmukh',skill:'Java',rating:4.7,exp:4,sessions:310,cost:50,college:'PICT Pune',bio:'Java expert with strong fundamentals in OOP, collections, streams, and Android development.',reviews:[{user:'Abhishek M.',rating:5,text:'Shreya is an excellent Java mentor.'},{user,'Pallavi D.',rating:4,text:'Very thorough and detailed explanations.'},{user:'Sagar K.',rating:5,text:'Helped me prepare for my placement exams.'}] },
+      { id:9,name:'Aryan Khanna',skill:'Web Development',rating:4.6,exp:3,sessions:200,cost:50,college:'SRM',bio:'Frontend developer passionate about CSS, JavaScript, and building responsive websites.',reviews:[{user:'Tanvi G.',rating:4,text:'Aryan taught me CSS Grid and Flexbox so well!'},{user:'Harsh V.',rating:5,text:'Great for web dev beginners.'},{user:'Simran K.',rating:5,text:'Very engaging and interactive sessions.'}] },
+      { id:10,name:'Isha Talwar',skill:'React',rating:4.8,exp:4,sessions:290,cost:55,college:'BITS Pilani',bio:'React expert skilled in hooks, context API, Next.js, and TypeScript. Builds production-ready apps.',reviews:[{user:'Nikhil S.',rating:5,text:'Isha is incredible! Her React knowledge is deep.'},{user:'Pranali M.',rating:5,text:'Best sessions on React hooks and context.'},{user:'Rohit G.',rating:4,text:'Very professional and knowledgeable.'}] },
+      { id:11,name:'Pranav Shetty',skill:'Data Science',rating:4.3,exp:2,sessions:120,cost:40,college:'MIT Manipal',bio:'Data science practitioner skilled in SQL, Python, Tableau, and statistical analysis.',reviews:[{user:'Aditi R.',rating:4,text:'Good mentor for data science fundamentals.'},{user:'Kunal P.',rating:4,text:'Helped me with my data analysis projects.'},{user:'Shreya M.',rating:5,text:'Very approachable and helpful.'}] },
+      { id:12,name:'Devika Rao',skill:'Machine Learning',rating:4.8,exp:4,sessions:260,cost:60,college:'IIIT Bangalore',bio:'ML engineer specializing in NLP, computer vision, and deep learning frameworks.',reviews:[{user:'Arjun N.',rating:5,text:'Devika is exceptional! Her NLP sessions are gold.'},{user:'Megha S.',rating:5,text:'Learned so much about computer vision.'},{user:'Varun T.',rating:4,text:'Great mentor for advanced ML topics.'}] }
+    ];
+
+    let currentFilter = 'All';
+    let currentSearch = '';
+
+    function renderMentors() {
+      const grid = document.getElementById('mentorsGrid');
+      const filtered = mentors.filter(m => {
+        const matchSkill = currentFilter === 'All' || m.skill === currentFilter;
+        const search = currentSearch.toLowerCase();
+        const matchSearch = !search || m.name.toLowerCase().includes(search) || m.skill.toLowerCase().includes(search);
+        return matchSkill && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="no-results"><span class="no-results-icon">🔍</span><p>No mentors found matching your criteria.</p></div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(m => `
+        <div class="mentor-card-detailed">
+          <div class="mentor-card-top">
+            <img class="mentor-avatar-lg" src="https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=6C63FF&color=fff" alt="${m.name}">
+            <div class="mentor-info">
+              <div class="mentor-name">${m.name}</div>
+              <div class="mentor-skill">${m.skill}</div>
+              <div class="mentor-stars">${'★'.repeat(Math.floor(m.rating))}${m.rating%1>=0.5?'★':''} <span class="mentor-rating-num">${m.rating}</span></div>
+            </div>
+            <span class="mentor-cost-badge">⭐ ${m.cost} pts</span>
+          </div>
+          <div class="mentor-meta-row">
+            <span class="mentor-meta-item">📅 ${m.exp} yr</span>
+            <span class="mentor-meta-item">📋 ${m.sessions} sessions</span>
+          </div>
+          <div class="mentor-college">🎓 ${m.college}</div>
+          <p class="mentor-bio">${m.bio}</p>
+          <div class="mentor-card-actions">
+            <button class="view-profile-btn" onclick="openModal(${m.id})">View Profile</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function setFilter(skill) {
+      currentFilter = skill;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.skill === skill));
+      renderMentors();
+    }
+
+    function filterMentors() {
+      currentSearch = document.getElementById('searchInput').value;
+      renderMentors();
+    }
+
+    function openModal(id) {
+      const m = mentors.find(x => x.id === id);
+      if (!m) return;
+      const body = document.getElementById('modalBody');
+      const footer = document.getElementById('modalFooter');
+
+      const stars = '★'.repeat(Math.floor(m.rating)) + (m.rating % 1 >= 0.5 ? '★' : '');
+
+      body.innerHTML = `
+        <div class="modal-profile-top">
+          <img class="modal-avatar" src="https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=6C63FF&color=fff&size=128" alt="${m.name}">
+          <div class="modal-profile-info">
+            <div class="modal-profile-name">${m.name}</div>
+            <div class="modal-profile-skill">${m.skill}</div>
+            <div class="modal-profile-meta">
+              <span>⭐ ${m.rating}</span>
+              <span>📅 ${m.exp} yr exp</span>
+              <span>📋 ${m.sessions} sessions</span>
+              <span>⭐ ${m.cost} pts/session</span>
+            </div>
+          </div>
+        </div>
+        <p class="modal-profile-bio">${m.bio}</p>
+        <div class="mentor-college" style="margin-bottom:12px">🎓 ${m.college}</div>
+        <div class="reviews-section">
+          <h4 class="reviews-title">Student Reviews</h4>
+          ${m.reviews.map(r => `
+            <div class="review-item">
+              <div class="review-user">${r.user}</div>
+              <div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+              <p class="review-text">${r.text}</p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      footer.innerHTML = `
+        <button class="btn btn-outline" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" onclick="bookWithMentor(${m.id})">Book Session</button>
+      `;
+
+      document.getElementById('mentorModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('mentorModal').classList.add('hidden');
+    }
+
+    function bookWithMentor(id) {
+      closeModal();
+      window.location.href = 'sessions.html?mentor=' + id;
+    }
+
+    document.addEventListener('DOMContentLoaded', renderMentors);
+  </script>
+</body>
+</html>
