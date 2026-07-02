@@ -407,7 +407,7 @@ h1, h2, h3, h4, h5, h6 {
 .mb-md { margin-bottom: 16px; }
 .mb-lg { margin-bottom: 24px; }
 
-.hidden { display: none; }
+.hidden { display: none !important; }
 .truncate {
   white-space: nowrap;
   overflow: hidden;

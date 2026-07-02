@@ -9,8 +9,15 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 
-public class AchievementEngine {
+class AchievementEngine {
 
     // ===== DATA MODELS =====
 
@@ -489,17 +496,456 @@ public class AchievementEngine {
             LocalDate.now().minusDays(3).toString(), 10));
     }
 
-    // ===== SIMPLE REST SERVER =====
+    // ===== REST SERVER (built on the JDK's built-in com.sun.net.httpserver, no external deps) =====
 
     static void startRestServer() {
-        System.out.println("Achievement Engine REST mode requires Spring Boot or similar.");
-        System.out.println("Endpoints to implement:");
-        System.out.println("  POST /api/achievements/validate-badges");
-        System.out.println("  POST /api/achievements/validate-achievements");
-        System.out.println("  POST /api/achievements/level");
-        System.out.println("  POST /api/achievements/update-streak");
-        System.out.println();
-        System.out.println("Run CLI mode instead: java AchievementEngine");
-        runCLI();
+        int port = 8080;
+        try {
+            HttpServer server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
+            server.createContext("/api/achievements/validate-badges", new RestHandler("validate-badges"));
+            server.createContext("/api/achievements/validate-achievements", new RestHandler("validate-achievements"));
+            server.createContext("/api/achievements/level", new RestHandler("level"));
+            server.createContext("/api/achievements/update-streak", new RestHandler("update-streak"));
+            server.createContext("/api/achievements/health", new RestHandler("health"));
+            server.setExecutor(null);
+            server.start();
+            System.out.println("Achievement Engine running on http://0.0.0.0:" + port);
+            System.out.println("Endpoints:");
+            System.out.println("  GET  /api/achievements/health");
+            System.out.println("  POST /api/achievements/validate-badges");
+            System.out.println("  POST /api/achievements/validate-achievements");
+            System.out.println("  POST /api/achievements/level");
+            System.out.println("  POST /api/achievements/update-streak");
+        } catch (IOException e) {
+            System.out.println("Failed to start REST server: " + e.getMessage());
+        }
+    }
+
+    static class RestHandler implements HttpHandler {
+        final String route;
+
+        RestHandler(String route) {
+            this.route = route;
+        }
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            try {
+                if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                    sendJson(exchange, 204, null);
+                    return;
+                }
+                if ("health".equals(route)) {
+                    Map<String, Object> body = new LinkedHashMap<>();
+                    body.put("status", "ok");
+                    body.put("service", "achievement-engine");
+                    sendJson(exchange, 200, body);
+                    return;
+                }
+
+                Map<String, Object> input = readJsonBody(exchange);
+                Object result;
+                switch (route) {
+                    case "validate-badges":
+                        result = restValidateBadges(input);
+                        break;
+                    case "validate-achievements":
+                        result = restValidateAchievements(input);
+                        break;
+                    case "level":
+                        result = restLevel(input);
+                        break;
+                    case "update-streak":
+                        result = restUpdateStreak(input);
+                        break;
+                    default:
+                        sendJson(exchange, 404, err("Not found"));
+                        return;
+                }
+                sendJson(exchange, 200, result);
+            } catch (Exception e) {
+                sendJson(exchange, 400, err(e.getMessage() == null ? "Bad request" : e.getMessage()));
+            }
+        }
+
+        private Map<String, Object> err(String message) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("error", message);
+            return m;
+        }
+    }
+
+    // ===== REST-FACING LOGIC (operates on loosely-typed JSON maps sent by the frontend) =====
+
+    @SuppressWarnings("unchecked")
+    static List<Map<String, Object>> restValidateBadges(Map<String, Object> u) {
+        int skillPoints = asInt(u.get("skillPoints"));
+        int sessions = asList(u.get("completedSessions")).size();
+        int streak = asInt(u.get("currentStreak"));
+        List<Object> paths = asList(u.get("completedSubjectPaths"));
+        boolean hasPerfect = asBool(u.get("hasPerfectScore"));
+        String today = LocalDate.now().toString();
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        for (Badge badge : BADGE_DEFINITIONS) {
+            boolean unlocked;
+            switch (badge.id) {
+                case "python-beginner": unlocked = paths.contains("python-basics"); break;
+                case "java-explorer": unlocked = paths.contains("java-basics"); break;
+                case "web-dev-starter": unlocked = paths.contains("web-basics"); break;
+                case "assessment-master": unlocked = hasPerfect; break;
+                case "top-learner": unlocked = skillPoints >= 1000; break;
+                case "top-mentor": unlocked = sessions >= 5; break;
+                case "consistency-champion": unlocked = streak >= 7; break;
+                case "skill-guru": unlocked = isSkillGuruPaths(paths); break;
+                default: unlocked = false;
+            }
+            Map<String, Object> r = new LinkedHashMap<>();
+            r.put("id", badge.id);
+            r.put("name", badge.name);
+            r.put("icon", badge.icon);
+            r.put("description", badge.description);
+            r.put("requirement", badge.requirement);
+            r.put("unlocked", unlocked);
+            r.put("unlockedDate", unlocked ? today : null);
+            results.add(r);
+        }
+        return results;
+    }
+
+    @SuppressWarnings("unchecked")
+    static List<Map<String, Object>> restValidateAchievements(Map<String, Object> u) {
+        int skillPoints = asInt(u.get("skillPoints"));
+        int sessions = asList(u.get("completedSessions")).size();
+        int streak = asInt(u.get("currentStreak"));
+        int quizzes = asList(u.get("completedQuizzes")).size();
+        int modules = asList(u.get("completedModules")).size();
+        int paths = asList(u.get("completedSubjectPaths")).size();
+        int daily = asInt(u.get("dailyChallengesCompleted"));
+        int weekly = asInt(u.get("weeklyChallengesCompleted"));
+        boolean hasPerfect = asBool(u.get("hasPerfectScore"));
+        boolean easyAll = asBool(u.get("completedEasyAll"));
+        boolean mediumAll = asBool(u.get("completedMediumAll"));
+        boolean hardAll = asBool(u.get("completedHardAll"));
+        String today = LocalDate.now().toString();
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        for (Achievement ach : ACHIEVEMENT_DEFINITIONS) {
+            boolean unlocked;
+            switch (ach.id) {
+                case "first-quiz": unlocked = quizzes >= 1; break;
+                case "quiz-perfect": unlocked = hasPerfect; break;
+                case "quiz-streak-3": unlocked = quizzes >= 3 && streak >= 3; break;
+                case "skill-path-starter": unlocked = modules >= 1; break;
+                case "skill-path-complete": unlocked = paths >= 1; break;
+                case "mentor-first": unlocked = sessions >= 1; break;
+                case "mentor-five": unlocked = sessions >= 5; break;
+                case "streak-3": unlocked = streak >= 3; break;
+                case "streak-7": unlocked = streak >= 7; break;
+                case "streak-30": unlocked = streak >= 30; break;
+                case "assessment-easy-all": unlocked = easyAll; break;
+                case "assessment-medium-all": unlocked = mediumAll; break;
+                case "assessment-hard-all": unlocked = hardAll; break;
+                case "challenge-first": unlocked = daily > 0 || weekly > 0; break;
+                case "points-500": unlocked = skillPoints >= 500; break;
+                default: unlocked = false;
+            }
+            Map<String, Object> r = new LinkedHashMap<>();
+            r.put("id", ach.id);
+            r.put("name", ach.name);
+            r.put("icon", ach.icon);
+            r.put("description", ach.description);
+            r.put("requirement", ach.requirement);
+            r.put("skillPoints", ach.skillPoints);
+            r.put("category", ach.category);
+            r.put("unlocked", unlocked);
+            r.put("unlockedDate", unlocked ? today : null);
+            results.add(r);
+        }
+        return results;
+    }
+
+    static Map<String, Object> restLevel(Map<String, Object> body) {
+        int skillPoints = asInt(body.get("skillPoints"));
+        int level = calculateLevel(skillPoints);
+        double progress = levelProgress(skillPoints);
+        int pointsToNext = pointsToNextLevel(skillPoints);
+        Map<String, Object> r = new LinkedHashMap<>();
+        r.put("level", level);
+        r.put("progress", Math.round(progress * 10.0) / 10.0);
+        r.put("pointsToNext", pointsToNext);
+        return r;
+    }
+
+    static Map<String, Object> restUpdateStreak(Map<String, Object> body) {
+        Object lastActiveObj = body.get("lastActiveDate");
+        int currentStreak = asInt(body.get("currentStreak"));
+        Map<String, Object> r = new LinkedHashMap<>();
+        if (lastActiveObj == null || String.valueOf(lastActiveObj).isEmpty()) {
+            r.put("newStreak", 1);
+            r.put("streakBroken", false);
+            return r;
+        }
+        try {
+            LocalDate last = LocalDate.parse(String.valueOf(lastActiveObj).substring(0, 10));
+            long diffDays = ChronoUnit.DAYS.between(last, LocalDate.now());
+            if (diffDays == 0) {
+                r.put("newStreak", currentStreak);
+                r.put("streakBroken", false);
+            } else if (diffDays == 1) {
+                r.put("newStreak", currentStreak + 1);
+                r.put("streakBroken", false);
+            } else {
+                r.put("newStreak", 1);
+                r.put("streakBroken", true);
+                r.put("brokenStreak", currentStreak);
+            }
+        } catch (Exception e) {
+            r.put("newStreak", 1);
+            r.put("streakBroken", false);
+        }
+        return r;
+    }
+
+    private static boolean isSkillGuruPaths(List<Object> paths) {
+        String[] pythonPaths = {"python-basics", "python-advanced"};
+        String[] javaPaths = {"java-basics", "java-oop"};
+        String[] webPaths = {"web-basics", "web-react"};
+        long pythonDone = Arrays.stream(pythonPaths).filter(paths::contains).count();
+        long javaDone = Arrays.stream(javaPaths).filter(paths::contains).count();
+        long webDone = Arrays.stream(webPaths).filter(paths::contains).count();
+        return pythonDone == pythonPaths.length || javaDone == javaPaths.length || webDone == webPaths.length;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Object> asList(Object o) {
+        return o instanceof List ? (List<Object>) o : Collections.emptyList();
+    }
+
+    private static int asInt(Object o) {
+        if (o instanceof Number) return ((Number) o).intValue();
+        return 0;
+    }
+
+    private static boolean asBool(Object o) {
+        return Boolean.TRUE.equals(o);
+    }
+
+    // ===== HTTP helpers =====
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> readJsonBody(HttpExchange exchange) throws IOException {
+        java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();
+        byte[] chunk = new byte[4096];
+        int n;
+        java.io.InputStream in = exchange.getRequestBody();
+        while ((n = in.read(chunk)) != -1) buf.write(chunk, 0, n);
+        String text = new String(buf.toByteArray(), StandardCharsets.UTF_8).trim();
+        if (text.isEmpty()) return new LinkedHashMap<>();
+        Object parsed = MiniJson.parse(text);
+        return parsed instanceof Map ? (Map<String, Object>) parsed : new LinkedHashMap<>();
+    }
+
+    private static void sendJson(HttpExchange exchange, int status, Object data) throws IOException {
+        exchange.getResponseHeaders().add("Content-Type", "application/json");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
+        byte[] out = data == null ? new byte[0] : MiniJson.write(data).getBytes(StandardCharsets.UTF_8);
+        exchange.sendResponseHeaders(status, out.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(out);
+        }
+    }
+
+    // ===== Minimal dependency-free JSON parser/writer =====
+
+    static class MiniJson {
+        static Object parse(String text) {
+            Parser p = new Parser(text);
+            Object result = p.parseValue();
+            p.skipWhitespace();
+            return result;
+        }
+
+        static String write(Object value) {
+            StringBuilder sb = new StringBuilder();
+            writeValue(value, sb);
+            return sb.toString();
+        }
+
+        @SuppressWarnings("unchecked")
+        private static void writeValue(Object value, StringBuilder sb) {
+            if (value == null) {
+                sb.append("null");
+            } else if (value instanceof String) {
+                writeString((String) value, sb);
+            } else if (value instanceof Boolean || value instanceof Number) {
+                sb.append(value.toString());
+            } else if (value instanceof Map) {
+                sb.append('{');
+                boolean first = true;
+                for (Map.Entry<String, Object> e : ((Map<String, Object>) value).entrySet()) {
+                    if (!first) sb.append(',');
+                    first = false;
+                    writeString(e.getKey(), sb);
+                    sb.append(':');
+                    writeValue(e.getValue(), sb);
+                }
+                sb.append('}');
+            } else if (value instanceof List) {
+                sb.append('[');
+                boolean first = true;
+                for (Object item : (List<Object>) value) {
+                    if (!first) sb.append(',');
+                    first = false;
+                    writeValue(item, sb);
+                }
+                sb.append(']');
+            } else {
+                writeString(value.toString(), sb);
+            }
+        }
+
+        private static void writeString(String s, StringBuilder sb) {
+            sb.append('"');
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                switch (c) {
+                    case '"': sb.append("\\\""); break;
+                    case '\\': sb.append("\\\\"); break;
+                    case '\n': sb.append("\\n"); break;
+                    case '\r': sb.append("\\r"); break;
+                    case '\t': sb.append("\\t"); break;
+                    default:
+                        if (c < 0x20) sb.append(String.format("\\u%04x", (int) c));
+                        else sb.append(c);
+                }
+            }
+            sb.append('"');
+        }
+
+        private static class Parser {
+            final String s;
+            int i = 0;
+
+            Parser(String s) {
+                this.s = s;
+            }
+
+            void skipWhitespace() {
+                while (i < s.length() && Character.isWhitespace(s.charAt(i))) i++;
+            }
+
+            Object parseValue() {
+                skipWhitespace();
+                if (i >= s.length()) return null;
+                char c = s.charAt(i);
+                if (c == '{') return parseObject();
+                if (c == '[') return parseArray();
+                if (c == '"') return parseString();
+                if (c == 't' || c == 'f') return parseBoolean();
+                if (c == 'n') {
+                    i += 4;
+                    return null;
+                }
+                return parseNumber();
+            }
+
+            Map<String, Object> parseObject() {
+                Map<String, Object> map = new LinkedHashMap<>();
+                i++; // {
+                skipWhitespace();
+                if (i < s.length() && s.charAt(i) == '}') {
+                    i++;
+                    return map;
+                }
+                while (true) {
+                    skipWhitespace();
+                    String key = parseString();
+                    skipWhitespace();
+                    i++; // :
+                    Object value = parseValue();
+                    map.put(key, value);
+                    skipWhitespace();
+                    if (i < s.length() && s.charAt(i) == ',') {
+                        i++;
+                        continue;
+                    }
+                    break;
+                }
+                skipWhitespace();
+                if (i < s.length() && s.charAt(i) == '}') i++;
+                return map;
+            }
+
+            List<Object> parseArray() {
+                List<Object> list = new ArrayList<>();
+                i++; // [
+                skipWhitespace();
+                if (i < s.length() && s.charAt(i) == ']') {
+                    i++;
+                    return list;
+                }
+                while (true) {
+                    list.add(parseValue());
+                    skipWhitespace();
+                    if (i < s.length() && s.charAt(i) == ',') {
+                        i++;
+                        continue;
+                    }
+                    break;
+                }
+                skipWhitespace();
+                if (i < s.length() && s.charAt(i) == ']') i++;
+                return list;
+            }
+
+            String parseString() {
+                StringBuilder sb = new StringBuilder();
+                i++; // opening quote
+                while (i < s.length() && s.charAt(i) != '"') {
+                    char c = s.charAt(i);
+                    if (c == '\\' && i + 1 < s.length()) {
+                        char next = s.charAt(i + 1);
+                        switch (next) {
+                            case 'n': sb.append('\n'); break;
+                            case 'r': sb.append('\r'); break;
+                            case 't': sb.append('\t'); break;
+                            case '"': sb.append('"'); break;
+                            case '\\': sb.append('\\'); break;
+                            case '/': sb.append('/'); break;
+                            case 'u':
+                                String hex = s.substring(i + 2, i + 6);
+                                sb.append((char) Integer.parseInt(hex, 16));
+                                i += 4;
+                                break;
+                            default: sb.append(next);
+                        }
+                        i += 2;
+                    } else {
+                        sb.append(c);
+                        i++;
+                    }
+                }
+                i++; // closing quote
+                return sb.toString();
+            }
+
+            Boolean parseBoolean() {
+                if (s.startsWith("true", i)) {
+                    i += 4;
+                    return Boolean.TRUE;
+                }
+                i += 5;
+                return Boolean.FALSE;
+            }
+
+            Double parseNumber() {
+                int start = i;
+                while (i < s.length() && (Character.isDigit(s.charAt(i)) || "+-.eE".indexOf(s.charAt(i)) >= 0)) i++;
+                return Double.parseDouble(s.substring(start, i));
+            }
+        }
     }
 }

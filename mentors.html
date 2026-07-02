@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mentor Marketplace - LoopStudy</title>
-  <link rel="icon" href="../assets/favicon.png" />
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <style>
@@ -63,10 +62,15 @@
       <button class="hamburger-btn" onclick="document.querySelector('.navbar-links').classList.toggle('open')">☰</button>
       <ul class="navbar-links">
         <li><a class="navbar-link" href="dashboard.html">Dashboard</a></li>
+        <li><a class="navbar-link" href="profile.html">Profile</a></li>
         <li><a class="navbar-link active" href="mentors.html">Mentors</a></li>
         <li><a class="navbar-link" href="sessions.html">Sessions</a></li>
         <li><a class="navbar-link" href="assessments.html">Assessments</a></li>
+        <li><a class="navbar-link" href="achievements.html">Achievements</a></li>
+        <li><a class="navbar-link" href="rewards.html">Rewards</a></li>
         <li><a class="navbar-link" href="leaderboard.html">Leaderboard</a></li>
+        <li><a class="navbar-link" href="growth-center.html">Growth Center</a></li>
+        <li><a class="navbar-link" href="settings.html">Settings</a></li>
       </ul>
       <div class="navbar-right">
         <div class="navbar-user" onclick="location.href='profile.html'" style="cursor:pointer">
@@ -123,16 +127,20 @@
           <ul class="footer-links">
             <li><a class="footer-link" href="dashboard.html">Dashboard</a></li>
             <li><a class="footer-link" href="mentors.html">Mentors</a></li>
+            <li><a class="footer-link" href="sessions.html">Sessions</a></li>
             <li><a class="footer-link" href="assessments.html">Assessments</a></li>
+            <li><a class="footer-link" href="achievements.html">Achievements</a></li>
+            <li><a class="footer-link" href="rewards.html">Rewards</a></li>
             <li><a class="footer-link" href="leaderboard.html">Leaderboard</a></li>
+            <li><a class="footer-link" href="growth-center.html">Growth Center</a></li>
           </ul>
         </div>
         <div>
           <h4 class="footer-section-title">Support</h4>
           <ul class="footer-links">
+            <li><a class="footer-link" href="profile.html">Profile</a></li>
+            <li><a class="footer-link" href="settings.html">Settings</a></li>
             <li><a class="footer-link" href="#">Help Center</a></li>
-            <li><a class="footer-link" href="#">Privacy Policy</a></li>
-            <li><a class="footer-link" href="#">Terms of Service</a></li>
           </ul>
         </div>
         <div>
@@ -181,7 +189,7 @@
       { id:5,name:'Rohit Joshi',skill:'Data Science',rating:4.5,exp:4,sessions:220,cost:50,college:'IIT Kharagpur',bio:'Data scientist skilled in Python, Pandas, NumPy, and visualization. Helps turn data into insights.',reviews:[{user:'Meera K.',rating:4,text:'Rohit explained data science concepts very clearly.'},{user:'Arun V.',rating:5,text:'Great practical approach to data analysis.'},{user:'Neha G.',rating:4,text:'Very helpful sessions on Pandas.'}] },
       { id:6,name:'Ananya Mishra',skill:'Machine Learning',rating:4.9,exp:5,sessions:370,cost:65,college:'IIT Madras',bio:'ML engineer and researcher. Teaches algorithms, neural networks, and deep learning with practical projects.',reviews:[{user:'Siddharth R.',rating:5,text:'Ananya is a genius! Made ML so approachable.'},{user:'Kavya L.',rating:5,text:'Her explanations of neural networks are incredible.'},{user:'Manish T.',rating:5,text:'Best ML mentor I have ever had.'}] },
       { id:7,name:'Karthik Nair',skill:'Python',rating:4.4,exp:3,sessions:150,cost:40,college:'VIT Vellore',bio:'Python enthusiast focusing on automation, scripting, and basic to intermediate programming concepts.',reviews:[{user:'Riya S.',rating:4,text:'Very patient mentor for Python beginners.'},{user:'Ajay K.',rating:5,text:'Great at explaining basic concepts.'},{user:'Nithya P.',rating:4,text:'Helped me with my college projects.'}] },
-      { id:8,name:'Shreya Deshmukh',skill:'Java',rating:4.7,exp:4,sessions:310,cost:50,college:'PICT Pune',bio:'Java expert with strong fundamentals in OOP, collections, streams, and Android development.',reviews:[{user:'Abhishek M.',rating:5,text:'Shreya is an excellent Java mentor.'},{user,'Pallavi D.',rating:4,text:'Very thorough and detailed explanations.'},{user:'Sagar K.',rating:5,text:'Helped me prepare for my placement exams.'}] },
+      { id:8,name:'Shreya Deshmukh',skill:'Java',rating:4.7,exp:4,sessions:310,cost:50,college:'PICT Pune',bio:'Java expert with strong fundamentals in OOP, collections, streams, and Android development.',reviews:[{user:'Abhishek M.',rating:5,text:'Shreya is an excellent Java mentor.'},{user:'Pallavi D.',rating:4,text:'Very thorough and detailed explanations.'},{user:'Sagar K.',rating:5,text:'Helped me prepare for my placement exams.'}] },
       { id:9,name:'Aryan Khanna',skill:'Web Development',rating:4.6,exp:3,sessions:200,cost:50,college:'SRM',bio:'Frontend developer passionate about CSS, JavaScript, and building responsive websites.',reviews:[{user:'Tanvi G.',rating:4,text:'Aryan taught me CSS Grid and Flexbox so well!'},{user:'Harsh V.',rating:5,text:'Great for web dev beginners.'},{user:'Simran K.',rating:5,text:'Very engaging and interactive sessions.'}] },
       { id:10,name:'Isha Talwar',skill:'React',rating:4.8,exp:4,sessions:290,cost:55,college:'BITS Pilani',bio:'React expert skilled in hooks, context API, Next.js, and TypeScript. Builds production-ready apps.',reviews:[{user:'Nikhil S.',rating:5,text:'Isha is incredible! Her React knowledge is deep.'},{user:'Pranali M.',rating:5,text:'Best sessions on React hooks and context.'},{user:'Rohit G.',rating:4,text:'Very professional and knowledgeable.'}] },
       { id:11,name:'Pranav Shetty',skill:'Data Science',rating:4.3,exp:2,sessions:120,cost:40,college:'MIT Manipal',bio:'Data science practitioner skilled in SQL, Python, Tableau, and statistical analysis.',reviews:[{user:'Aditi R.',rating:4,text:'Good mentor for data science fundamentals.'},{user:'Kunal P.',rating:4,text:'Helped me with my data analysis projects.'},{user:'Shreya M.',rating:5,text:'Very approachable and helpful.'}] },
