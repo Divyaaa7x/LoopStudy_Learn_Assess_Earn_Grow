@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — LoopStudy</title>
+  <link rel="stylesheet" href="css/main.css?v=2" />
+  <link rel="stylesheet" href="css/components.css?v=2" />
+  <link rel="stylesheet" href="css/auth.css?v=2" />
+  <style>
+    .settings-page {
+      min-height: 100vh;
+      background: var(--dark);
+      padding: 32px 24px;
+    }
+    .settings-container {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .settings-section {
+      background: var(--dark2);
+      border-radius: 16px;
+      padding: 28px 32px;
+      border: 1px solid var(--border);
+    }
+    .settings-section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0 0 4px;
+    }
+    .settings-section-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0 0 24px;
+    }
+    .settings-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .settings-row:last-child {
+      border-bottom: none;
+    }
+    .settings-row-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .settings-row-label span {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .settings-row-label small {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .skills-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .settings-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .pw-strength-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .pw-strength-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .pw-strength-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: all 0.3s ease;
+    }
+    .pw-strength-fill.weak { background: var(--secondary); width: 25%; }
+    .pw-strength-fill.medium { background: var(--warning); width: 50%; }
+    .pw-strength-fill.strong { background: var(--success); width: 75%; }
+    .pw-strength-fill.very-strong { background: var(--success); width: 100%; }
+    .pw-strength-label {
+      font-size: 12px;
+      font-weight: 600;
+      min-width: 70px;
+      text-align: right;
+    }
+    .pw-strength-label.weak { color: var(--secondary); }
+    .pw-strength-label.medium { color: var(--warning); }
+    .pw-strength-label.strong { color: var(--success); }
+    .pw-strength-label.very-strong { color: var(--success); }
+    .danger-zone {
+      border-color: rgba(255,107,107,0.3);
+    }
+    .danger-zone .settings-section-title {
+      color: var(--secondary);
+    }
+    .danger-warning {
+      background: rgba(255,107,107,0.08);
+      border: 1px solid rgba(255,107,107,0.2);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .danger-warning p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .danger-warning strong {
+      color: var(--secondary);
+    }
+    .theme-options {
+      display: flex;
+      gap: 12px;
+    }
+    .theme-option {
+      flex: 1;
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: var(--dark);
+      color: var(--text);
+      cursor: pointer;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .theme-option:hover {
+      border-color: var(--text-muted);
+    }
+    .theme-option.selected {
+      border-color: var(--primary);
+      background: rgba(108,99,255,0.1);
+      color: var(--primary);
+    }
+    .theme-option .theme-icon {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+    .settings-message {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .settings-message.success {
+      display: block;
+      background: rgba(0,200,83,0.12);
+      color: var(--success);
+      border: 1px solid rgba(0,200,83,0.2);
+    }
+    .settings-message.error {
+      display: block;
+      background: rgba(255,107,107,0.12);
+      color: var(--secondary);
+      border: 1px solid rgba(255,107,107,0.2);
+    }
+    @media (max-width: 768px) {
+      .settings-page { padding: 16px; }
+      .settings-section { padding: 20px 16px; }
+      .settings-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .settings-actions { justify-content: stretch; }
+      .settings-actions .btn { flex: 1; }
+      .theme-options { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="dashboard.html" class="navbar-brand">LoopStudy</a>
+    <button class="hamburger-btn" onclick="document.querySelector('.navbar-links').classList.toggle('open')">&#9776;</button>
+    <ul class="navbar-links">
+      <li><a href="dashboard.html" class="navbar-link">Dashboard</a></li>
+      <li><a href="profile.html" class="navbar-link">Profile</a></li>
+      <li><a href="mentors.html" class="navbar-link">Mentors</a></li>
+      <li><a href="sessions.html" class="navbar-link">Sessions</a></li>
+      <li><a href="assessments.html" class="navbar-link">Assessments</a></li>
+      <li><a href="achievements.html" class="navbar-link">Achievements</a></li>
+      <li><a href="rewards.html" class="navbar-link">Rewards</a></li>
+      <li><a href="leaderboard.html" class="navbar-link">Leaderboard</a></li>
+      <li><a href="growth-center.html" class="navbar-link">Growth Center</a></li>
+      <li><a href="settings.html" class="navbar-link active">Settings</a></li>
+    </ul>
+    <div class="navbar-right">
+      <div class="navbar-user" onclick="location.href='profile.html'">
+        <img id="navAvatar" class="navbar-avatar" src="" alt="Avatar" />
+        <span id="navName" class="navbar-username"></span>
+      </div>
+      <span id="navPoints" class="navbar-points">&#9733; 0</span>
+    </div>
+  </nav>
+
+  <div class="settings-page" style="padding-top: 96px;">
+    <div class="settings-container">
+      <div class="page-header">
+        <h1 class="page-title">Settings</h1>
+        <p class="page-subtitle">Manage your account preferences</p>
+      </div>
+
+      <!-- Profile Settings -->
+      <div class="settings-section">
+        <h2 class="settings-section-title">Profile Settings</h2>
+        <p class="settings-section-desc">Update your personal information</p>
+        <div id="profileMessage" class="settings-message"></div>
+        <div class="settings-form" id="profileForm">
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input type="text" id="inputName" class="form-input" placeholder="Your name" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="text" id="inputEmail" class="form-input" placeholder="email@example.com" disabled />
+          </div>
+          <div class="form-group">
+            <label class="form-label">College</label>
+            <select id="inputCollege" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bio</label>
+            <textarea id="inputBio" class="form-textarea" placeholder="Tell us about yourself..." rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Skills</label>
+            <div id="skillsContainer" class="skills-chips"></div>
+          </div>
+          <div class="settings-actions">
+            <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Change -->
+      <div class="settings-section">
+        <h2 class="settings-section-title">Password</h2>
+        <p class="settings-section-desc">Change your account password</p>
+        <div id="pwMessage" class="settings-message"></div>
+        <div class="settings-form">
+          <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <input type="password" id="inputCurrentPw" class="form-input" placeholder="Enter current password" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input type="password" id="inputNewPw" class="form-input" placeholder="Enter new password" oninput="checkPwStrength(this.value)" />
+            <div class="pw-strength-row">
+              <div class="pw-strength-bar"><div id="pwStrengthFill" class="pw-strength-fill" style="width:0%"></div></div>
+              <span id="pwStrengthLabel" class="pw-strength-label"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" id="inputConfirmPw" class="form-input" placeholder="Confirm new password" />
+          </div>
+          <div class="settings-actions">
+            <button class="btn btn-primary" onclick="updatePassword()">Update Password</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="settings-section">
+        <h2 class="settings-section-title">Notifications</h2>
+        <p class="settings-section-desc">Manage your notification preferences</p>
+        <div id="notifMessage" class="settings-message"></div>
+        <div id="notifSettings"></div>
+      </div>
+
+      <!-- Appearance -->
+      <div class="settings-section">
+        <h2 class="settings-section-title">Appearance</h2>
+        <p class="settings-section-desc">Customize your theme</p>
+        <div id="appearanceMessage" class="settings-message"></div>
+        <div class="theme-options" id="themeOptions">
+          <div class="theme-option" data-theme="dark" onclick="selectTheme('dark')">
+            <span class="theme-icon">&#9790;</span>
+            Dark
+          </div>
+          <div class="theme-option" data-theme="light" onclick="selectTheme('light')">
+            <span class="theme-icon">&#9728;</span>
+            Light
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="settings-section danger-zone">
+        <h2 class="settings-section-title">Danger Zone</h2>
+        <p class="settings-section-desc">Irreversible actions</p>
+        <div class="danger-warning">
+          <p><strong>Warning:</strong> Deleting your account is permanent. All your data including profile, badges, achievements, sessions, and transactions will be removed. This action cannot be undone.</p>
+        </div>
+        <button class="btn btn-danger" onclick="showDeleteModal()">Delete Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Delete Account</h3>
+        <button class="modal-close" onclick="hideDeleteModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--text-muted);font-size:14px;line-height:1.6;margin:0;">
+          Are you sure you want to delete your account? This will permanently remove all your data from LoopStudy. Type <strong style="color:var(--secondary)">DELETE</strong> to confirm.
+        </p>
+        <div style="margin-top:16px;">
+          <input type="text" id="deleteConfirmInput" class="form-input" placeholder='Type "DELETE" to confirm' />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="hideDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" id="deleteConfirmBtn" disabled onclick="deleteAccount()">Delete My Account</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <div>
+        <a href="dashboard.html" class="footer-brand">LoopStudy</a>
+        <p class="footer-desc">Learn, Assess, Earn and Grow — your complete skill-building platform.</p>
+      </div>
+      <div>
+        <h4 class="footer-section-title">Platform</h4>
+        <ul class="footer-links">
+          <li><a href="dashboard.html" class="footer-link">Dashboard</a></li>
+          <li><a href="growth-center.html" class="footer-link">Growth Center</a></li>
+          <li><a href="mentors.html" class="footer-link">Mentors</a></li>
+          <li><a href="sessions.html" class="footer-link">Sessions</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-section-title">Learning</h4>
+        <ul class="footer-links">
+          <li><a href="achievements.html" class="footer-link">Achievements</a></li>
+          <li><a href="assessments.html" class="footer-link">Assessments</a></li>
+          <li><a href="leaderboard.html" class="footer-link">Leaderboard</a></li>
+          <li><a href="rewards.html" class="footer-link">Rewards</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-section-title">Account</h4>
+        <ul class="footer-links">
+          <li><a href="settings.html" class="footer-link">Settings</a></li>
+          <li><a href="profile.html" class="footer-link">Profile</a></li>
+          <li><a href="#" class="footer-link" onclick="doLogout()">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">&copy; 2026 LoopStudy. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      function lsGet(key) {
+        try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
+      }
+      function lsSet(key, value) {
+        try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; }
+      }
+
+      var user = lsGet('loopstudy_currentUser');
+      if (!user) { window.location.href = 'index.html'; return; }
+
+      var userId = user.id;
+      var COLLEGES = [
+        { id: 1, name: 'Anurag University' },
+        { id: 2, name: 'Srinidhi University' },
+        { id: 3, name: 'Nalla Malla Reddy University' },
+        { id: 4, name: 'Malla Reddy University' },
+        { id: 5, name: 'Indian Institute of Technology Bombay' },
+        { id: 6, name: 'Indian Institute of Technology Delhi' },
+        { id: 7, name: 'National Institute of Technology Trichy' },
+        { id: 8, name: 'Vellore Institute of Technology' },
+        { id: 9, name: 'SRM Institute of Science and Technology' },
+        { id: 10, name: 'Manipal Institute of Technology' },
+        { id: 11, name: 'International Institute of Information Technology Hyderabad' },
+        { id: 12, name: 'Other' }
+      ];
+      var ALL_SKILLS = ['Python', 'Java', 'JavaScript', 'HTML/CSS', 'React', 'Node.js', 'C', 'C++', 'SQL', 'Data Structures', 'Algorithms', 'Machine Learning', 'Web Development', 'Mobile Development', 'DevOps'];
+      var NOTIF_KEYS = ['emailNotifications', 'pushNotifications', 'challengeReminders', 'sessionReminders', 'achievementAlerts'];
+      var NOTIF_LABELS = {
+        emailNotifications: 'Email notifications',
+        pushNotifications: 'Push notifications',
+        challengeReminders: 'Challenge reminders',
+        sessionReminders: 'Session reminders',
+        achievementAlerts: 'Achievement alerts'
+      };
+      var NOTIF_DESCS = {
+        emailNotifications: 'Receive updates via email',
+        pushNotifications: 'Receive push notifications in browser',
+        challengeReminders: 'Get reminded about active challenges',
+        sessionReminders: 'Get reminded about upcoming sessions',
+        achievementAlerts: 'Get notified when you unlock achievements'
+      };
+
+      function getUserProfileKey(uid) { return 'loopstudy_profile_' + uid; }
+      function getUsers() { return lsGet('loopstudy_users') || []; }
+      function saveUsers(users) { lsSet('loopstudy_users', users); }
+
+      function getSettingsKey(uid) { return 'loopstudy_settings_' + uid; }
+      function getSettings(uid) {
+        if (!uid) return null;
+        var s = lsGet(getSettingsKey(uid));
+        if (!s) {
+          s = {
+            emailNotifications: true,
+            pushNotifications: true,
+            challengeReminders: true,
+            sessionReminders: true,
+            achievementAlerts: true,
+            theme: 'dark'
+          };
+          lsSet(getSettingsKey(uid), s);
+        }
+        return s;
+      }
+      function saveSettings(uid, s) { lsSet(getSettingsKey(uid), s); }
+
+      // Load user data
+      var profileKey = getUserProfileKey(userId);
+      var userData = lsGet(profileKey);
+      if (!userData) {
+        userData = {
+          profile: {
+            name: user.name || '',
+            email: user.email || '',
+            college: user.college || '',
+            skills: user.skills || [],
+            bio: '',
+            avatar: user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name || 'U'),
+            mentorStatus: user.mentorStatus || false
+          },
+          skillPoints: 0,
+          level: 1,
+          streak: { current: 0, best: 0, lastActive: null },
+          sessionsCompleted: 0,
+          assessmentsCompleted: 0,
+          transactions: []
+        };
+        lsSet(profileKey, userData);
+      }
+      var settings = getSettings(userId);
+
+      // DOM refs
+      var $ = function (id) { return document.getElementById(id); };
+      var inputName = $('inputName');
+      var inputEmail = $('inputEmail');
+      var inputCollege = $('inputCollege');
+      var inputBio = $('inputBio');
+      var skillsContainer = $('skillsContainer');
+      var navAvatar = $('navAvatar');
+      var navName = $('navName');
+      var navPoints = $('navPoints');
+
+      // Navbar
+      navAvatar.src = userData.profile.avatar;
+      navName.textContent = userData.profile.name || 'User';
+      navPoints.innerHTML = '&#9733; ' + (userData.skillPoints || 0);
+
+      // Populate college dropdown
+      function populateCollegeSelect() {
+        var html = '<option value="">Select your college</option>';
+        COLLEGES.forEach(function (c) {
+          html += '<option value="' + c.name + '">' + c.name + '</option>';
+        });
+        inputCollege.innerHTML = html;
+        if (userData.profile.college) {
+          inputCollege.value = userData.profile.college;
+        }
+      }
+
+      // Populate skills
+      var selectedSkills = (userData.profile.skills || []).slice();
+      function renderSkills() {
+        var html = '';
+        ALL_SKILLS.forEach(function (s) {
+          var sel = selectedSkills.indexOf(s) !== -1;
+          html += '<button class="skill-chip' + (sel ? ' selected' : '') + '" onclick="toggleSkill(\'' + s.replace(/'/g, "\\'") + '\')">' + s + '</button>';
+        });
+        skillsContainer.innerHTML = html;
+      }
+
+      window.toggleSkill = function (skill) {
+        var idx = selectedSkills.indexOf(skill);
+        if (idx !== -1) { selectedSkills.splice(idx, 1); }
+        else { selectedSkills.push(skill); }
+        renderSkills();
+      };
+
+      // Fill profile form
+      function fillProfile() {
+        inputName.value = userData.profile.name || '';
+        inputEmail.value = userData.profile.email || user.email || '';
+        populateCollegeSelect();
+        inputBio.value = userData.profile.bio || '';
+        renderSkills();
+      }
+
+      // Save profile
+      window.saveProfile = function () {
+        var msg = $('profileMessage');
+        var name = inputName.value.trim();
+        var college = inputCollege.value;
+        var bio = inputBio.value.trim();
+
+        if (!name) {
+          msg.className = 'settings-message error';
+          msg.textContent = 'Name is required';
+          return;
+        }
+
+        userData.profile.name = name;
+        userData.profile.college = college;
+        userData.profile.bio = bio;
+        userData.profile.skills = selectedSkills.slice();
+        userData.profile.avatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name);
+
+        lsSet(profileKey, userData);
+
+        // Update users array
+        var users = getUsers();
+        var idx = users.findIndex(function (u) { return u.id === userId; });
+        if (idx !== -1) {
+          users[idx].name = name;
+          users[idx].college = college;
+          users[idx].skills = selectedSkills.slice();
+          saveUsers(users);
+        }
+
+        // Update currentUser
+        var currentUser = lsGet('loopstudy_currentUser');
+        if (currentUser) {
+          currentUser.name = name;
+          currentUser.college = college;
+          currentUser.skills = selectedSkills.slice();
+          lsSet('loopstudy_currentUser', currentUser);
+        }
+
+        navName.textContent = name;
+        navAvatar.src = userData.profile.avatar;
+
+        msg.className = 'settings-message success';
+        msg.textContent = 'Profile updated successfully';
+        setTimeout(function () { msg.className = 'settings-message'; }, 3000);
+      };
+
+      // Password strength
+      window.checkPwStrength = function (val) {
+        var fill = $('pwStrengthFill');
+        var label = $('pwStrengthLabel');
+        if (!val) {
+          fill.style.width = '0%';
+          fill.className = 'pw-strength-fill';
+          label.textContent = '';
+          return;
+        }
+        var score = 0;
+        if (val.length >= 6) score++;
+        if (val.length >= 10) score++;
+        if (/[a-z]/.test(val) && /[A-Z]/.test(val)) score++;
+        if (/\d/.test(val)) score++;
+        if (/[^a-zA-Z0-9]/.test(val)) score++;
+        var levels = ['', 'weak', 'medium', 'strong', 'very-strong', 'very-strong'];
+        var labels = ['', 'Weak', 'Medium', 'Strong', 'Very Strong', 'Very Strong'];
+        var idx = Math.min(score, 4);
+        fill.className = 'pw-strength-fill ' + levels[idx];
+        fill.style.width = (idx * 25) + '%';
+        label.textContent = labels[idx];
+        label.className = 'pw-strength-label ' + levels[idx];
+      };
+
+      // Update password
+      window.updatePassword = function () {
+        var msg = $('pwMessage');
+        var currentPw = $('inputCurrentPw').value;
+        var newPw = $('inputNewPw').value;
+        var confirmPw = $('inputConfirmPw').value;
+
+        if (!currentPw || !newPw || !confirmPw) {
+          msg.className = 'settings-message error';
+          msg.textContent = 'All password fields are required';
+          return;
+        }
+        if (newPw !== confirmPw) {
+          msg.className = 'settings-message error';
+          msg.textContent = 'New passwords do not match';
+          return;
+        }
+        if (newPw.length < 6) {
+          msg.className = 'settings-message error';
+          msg.textContent = 'New password must be at least 6 characters';
+          return;
+        }
+
+        var users = getUsers();
+        var uIdx = users.findIndex(function (u) { return u.id === userId; });
+        if (uIdx === -1) {
+          msg.className = 'settings-message error';
+          msg.textContent = 'User not found';
+          return;
+        }
+        if (users[uIdx].password !== currentPw) {
+          msg.className = 'settings-message error';
+          msg.textContent = 'Current password is incorrect';
+          return;
+        }
+
+        users[uIdx].password = newPw;
+        saveUsers(users);
+
+        $('inputCurrentPw').value = '';
+        $('inputNewPw').value = '';
+        $('inputConfirmPw').value = '';
+        $('pwStrengthFill').style.width = '0%';
+        $('pwStrengthFill').className = 'pw-strength-fill';
+        $('pwStrengthLabel').textContent = '';
+
+        msg.className = 'settings-message success';
+        msg.textContent = 'Password updated successfully';
+        setTimeout(function () { msg.className = 'settings-message'; }, 3000);
+      };
+
+      // Notifications
+      function renderNotifications() {
+        var container = $('notifSettings');
+        var html = '';
+        NOTIF_KEYS.forEach(function (key) {
+          var val = settings[key] !== false;
+          html +=
+            '<div class="settings-row">' +
+              '<div class="settings-row-label">' +
+                '<span>' + NOTIF_LABELS[key] + '</span>' +
+                '<small>' + NOTIF_DESCS[key] + '</small>' +
+              '</div>' +
+              '<button class="toggle' + (val ? ' active' : '') + '" data-key="' + key + '" onclick="toggleNotif(\'' + key + '\')">' +
+                '<span class="toggle-thumb"></span>' +
+              '</button>' +
+            '</div>';
+        });
+        container.innerHTML = html;
+      }
+
+      window.toggleNotif = function (key) {
+        settings[key] = settings[key] !== false ? false : true;
+        saveSettings(userId, settings);
+        renderNotifications();
+        var msg = $('notifMessage');
+        msg.className = 'settings-message success';
+        msg.textContent = 'Notification preferences saved';
+        setTimeout(function () { msg.className = 'settings-message'; }, 2500);
+      };
+
+      // Appearance
+      window.selectTheme = function (theme) {
+        var msg = $('appearanceMessage');
+        settings.theme = theme;
+        saveSettings(userId, settings);
+        document.querySelectorAll('.theme-option').forEach(function (el) {
+          el.classList.toggle('selected', el.dataset.theme === theme);
+        });
+        msg.className = 'settings-message success';
+        msg.textContent = 'Theme set to ' + theme.charAt(0).toUpperCase() + theme.slice(1);
+        setTimeout(function () { msg.className = 'settings-message'; }, 2500);
+      };
+
+      function renderTheme() {
+        document.querySelectorAll('.theme-option').forEach(function (el) {
+          el.classList.toggle('selected', el.dataset.theme === (settings.theme || 'dark'));
+        });
+      }
+
+      // Delete account modal
+      window.showDeleteModal = function () {
+        $('deleteModal').style.display = 'flex';
+        $('deleteConfirmInput').value = '';
+        $('deleteConfirmBtn').disabled = true;
+        $('deleteConfirmInput').addEventListener('input', function onInput() {
+          $('deleteConfirmBtn').disabled = $('deleteConfirmInput').value !== 'DELETE';
+        });
+      };
+
+      window.hideDeleteModal = function () {
+        $('deleteModal').style.display = 'none';
+      };
+
+      window.deleteAccount = function () {
+        if ($('deleteConfirmInput').value !== 'DELETE') return;
+
+        var users = getUsers();
+        var updated = users.filter(function (u) { return u.id !== userId; });
+        saveUsers(updated);
+
+        var keysToRemove = [
+          'loopstudy_currentUser',
+          'loopstudy_profile_' + userId,
+          'loopstudy_badges_' + userId,
+          'loopstudy_achievements_' + userId,
+          'loopstudy_sessions_' + userId,
+          'loopstudy_assessments_' + userId,
+          'loopstudy_challenges_' + userId,
+          'loopstudy_rewards_' + userId,
+          'loopstudy_settings_' + userId
+        ];
+        keysToRemove.forEach(function (k) { localStorage.removeItem(k); });
+
+        window.location.href = 'index.html';
+      };
+
+      window.doLogout = function () {
+        localStorage.removeItem('loopstudy_currentUser');
+        window.location.href = 'index.html';
+      };
+
+      // Init
+      fillProfile();
+      renderNotifications();
+      renderTheme();
+    })();
+  </script>
+</body>
+</html>

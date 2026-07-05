@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoopStudy — Leaderboard</title>
+  <link rel="stylesheet" href="css/main.css?v=2">
+  <link rel="stylesheet" href="css/components.css?v=2">
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .rank-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: var(--dark2);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .rank-card:hover {
+      border-color: rgba(108,99,255,0.27);
+    }
+
+    .rank-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      flex-shrink: 0;
+      background: var(--dark);
+      color: var(--text-muted);
+    }
+
+    .rank-number.top-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff; }
+    .rank-number.top-2 { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: #fff; }
+    .rank-number.top-3 { background: linear-gradient(135deg, #CD7F32, #B8722D); color: #fff; }
+
+    .rank-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--border);
+    }
+
+    .rank-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .rank-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0 0 2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .rank-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .rank-stat {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--warning);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .rank-stat-mentor {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .rank-stat-mentor strong {
+      color: var(--warning);
+      display: block;
+      font-size: 16px;
+    }
+
+    .college-progress {
+      min-width: 180px;
+    }
+
+    .current-user-highlight {
+      background: rgba(255, 214, 0, 0.08);
+      border-color: rgba(255, 214, 0, 0.3);
+    }
+    .current-user-highlight:hover {
+      border-color: rgba(255, 214, 0, 0.5);
+    }
+
+    .leaderboard-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .rank-card { flex-wrap: wrap; }
+      .college-progress { min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="navbar">
+      <a href="dashboard.html" class="navbar-brand">LoopStudy</a>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">&#9776;</button>
+      <ul class="navbar-links" id="navbarLinks">
+        <li><a href="dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="profile.html" class="navbar-link">Profile</a></li>
+        <li><a href="mentors.html" class="navbar-link">Mentors</a></li>
+        <li><a href="sessions.html" class="navbar-link">Sessions</a></li>
+        <li><a href="assessments.html" class="navbar-link">Assessments</a></li>
+        <li><a href="achievements.html" class="navbar-link">Achievements</a></li>
+        <li><a href="rewards.html" class="navbar-link">Rewards</a></li>
+        <li><a href="leaderboard.html" class="navbar-link active">Leaderboard</a></li>
+        <li><a href="growth-center.html" class="navbar-link">Growth Center</a></li>
+        <li><a href="settings.html" class="navbar-link">Settings</a></li>
+      </ul>
+      <div class="navbar-right" id="navbarRight"></div>
+    </nav>
+
+    <main class="main-content">
+      <div class="page">
+        <div class="page-container">
+          <header class="page-header">
+            <h1 class="page-title">Leaderboards</h1>
+            <p class="page-subtitle">See how you rank among learners, mentors, and colleges</p>
+          </header>
+
+          <div style="display:flex;justify-content:center;">
+            <div class="tab-group" role="tablist">
+              <button class="tab-btn active" data-tab="learners" role="tab">Top Learners</button>
+              <button class="tab-btn" data-tab="mentors" role="tab">Top Mentors</button>
+              <button class="tab-btn" data-tab="colleges" role="tab">Top Colleges</button>
+            </div>
+          </div>
+
+          <div id="learnersTab" class="tab-content active">
+            <div class="leaderboard-list" id="learnersList"></div>
+          </div>
+
+          <div id="mentorsTab" class="tab-content">
+            <div class="leaderboard-list" id="mentorsList"></div>
+          </div>
+
+          <div id="collegesTab" class="tab-content">
+            <div class="leaderboard-list" id="collegesList"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <div>
+          <a href="dashboard.html" class="footer-brand">LoopStudy</a>
+          <p class="footer-desc">Learn, Assess, Earn and Grow. Master in-demand skills with interactive learning paths, mentorship, and gamified challenges.</p>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="dashboard.html" class="footer-link">Dashboard</a></li>
+            <li><a href="mentors.html" class="footer-link">Mentors</a></li>
+            <li><a href="sessions.html" class="footer-link">Sessions</a></li>
+            <li><a href="leaderboard.html" class="footer-link">Leaderboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Resources</h4>
+          <ul class="footer-links">
+            <li><a href="assessments.html" class="footer-link">Assessments</a></li>
+            <li><a href="rewards.html" class="footer-link">Rewards Store</a></li>
+            <li><a href="achievements.html" class="footer-link">Achievements</a></li>
+            <li><a href="growth-center.html" class="footer-link">Growth Center</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Support</h4>
+          <ul class="footer-links">
+            <li><a href="profile.html" class="footer-link">Profile</a></li>
+            <li><a href="settings.html" class="footer-link">Settings</a></li>
+            <li><a href="#" class="footer-link">Help Center</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; 2025 LoopStudy. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/storage.js?v=2"></script>
+  <script>
+
+    const user = Store.getCurrentUser();
+    if (!user) { window.location.href = 'login.html'; throw new Error('Not authenticated'); }
+
+    const userId = user.id;
+    const userData = Store.getUserData(userId);
+
+    function renderNavbar() {
+      const right = document.getElementById('navbarRight');
+      right.innerHTML = `
+        <div class="navbar-user">
+          <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name)}" alt="" class="navbar-avatar">
+          <span class="navbar-username">${user.name}</span>
+          <span class="navbar-points">⭐ ${userData?.skillPoints || 0}</span>
+        </div>
+      `;
+    }
+    renderNavbar();
+
+    document.getElementById('hamburgerBtn').addEventListener('click', () => {
+      document.getElementById('navbarLinks').classList.toggle('open');
+    });
+
+    const leaderboard = Store.getLeaderboard();
+    const users = Store.getUsers();
+
+    function getRankEmoji(index) {
+      if (index === 0) return '&#129351;';
+      if (index === 1) return '&#129352;';
+      if (index === 2) return '&#129353;';
+      return '';
+    }
+
+    function buildLearners() {
+      const learners = users.map(u => {
+        const data = Store.getUserData(u.id);
+        return {
+          id: u.id,
+          name: u.name,
+          college: u.college || '',
+          avatar: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}`,
+          skillPoints: data?.skillPoints || 0,
+          level: data?.level || 1,
+        };
+      }).sort((a, b) => b.skillPoints - a.skillPoints);
+
+      return learners;
+    }
+
+    function renderLearners() {
+      const list = document.getElementById('learnersList');
+      const learners = buildLearners();
+      if (learners.length === 0) {
+        list.innerHTML = '<p class="no-data">No learners yet. Start your learning journey!</p>';
+        return;
+      }
+      list.innerHTML = learners.map((l, i) => {
+        const isCurrentUser = l.id === userId;
+        return `
+          <div class="rank-card ${isCurrentUser ? 'current-user-highlight' : ''}">
+            <div class="rank-number ${i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : ''}">
+              ${i < 3 ? getRankEmoji(i) : '#' + (i + 1)}
+            </div>
+            <img src="${l.avatar}" alt="" class="rank-avatar">
+            <div class="rank-info">
+              <div class="rank-name">
+                ${l.name} ${isCurrentUser ? '<span style="font-size:11px;font-weight:600;color:var(--warning);">(You)</span>' : ''}
+                <span class="level-badge level-badge-sm">${l.level}</span>
+              </div>
+              <div class="rank-meta">${l.college || 'No college'}</div>
+            </div>
+            <div class="rank-stat">⭐ ${l.skillPoints.toLocaleString()}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    const SAMPLE_MENTORS = [
+      { id: 'sample-1', name: 'Arjun Sharma', skill: 'Python', rating: 4.8, sessions: 340 },
+      { id: 'sample-2', name: 'Vikram Reddy', skill: 'Web Development', rating: 4.9, sessions: 510 },
+      { id: 'sample-3', name: 'Ananya Mishra', skill: 'Machine Learning', rating: 4.9, sessions: 370 },
+      { id: 'sample-4', name: 'Neha Patel', skill: 'Java', rating: 4.6, sessions: 280 },
+      { id: 'sample-5', name: 'Isha Talwar', skill: 'React', rating: 4.8, sessions: 290 },
+    ].map(m => ({ ...m, avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}` }));
+
+    function buildMentors() {
+      const mentors = users
+        .filter(u => u.mentorStatus)
+        .map(u => {
+          const data = Store.getUserData(u.id);
+          return {
+            id: u.id,
+            name: u.name,
+            avatar: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}`,
+            skill: u.skills?.[0] || 'General',
+            rating: 4.5,
+            sessions: data?.sessionsCompleted || 0,
+          };
+        }).sort((a, b) => b.sessions - a.sessions);
+
+      return mentors.length > 0 ? mentors : SAMPLE_MENTORS;
+    }
+
+    function renderMentors() {
+      const list = document.getElementById('mentorsList');
+      const mentors = buildMentors();
+      if (mentors.length === 0) {
+        list.innerHTML = '<p class="no-data">No mentors available yet.</p>';
+        return;
+      }
+      list.innerHTML = mentors.map((m, i) => {
+        const isCurrentUser = m.id === userId;
+        const stars = '&#9733;'.repeat(Math.floor(m.rating)) + '&#9734;'.repeat(5 - Math.floor(m.rating));
+        return `
+          <div class="rank-card ${isCurrentUser ? 'current-user-highlight' : ''}">
+            <div class="rank-number ${i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : ''}">
+              ${i < 3 ? getRankEmoji(i) : '#' + (i + 1)}
+            </div>
+            <img src="${m.avatar}" alt="" class="rank-avatar">
+            <div class="rank-info">
+              <div class="rank-name">
+                ${m.name} ${isCurrentUser ? '<span style="font-size:11px;font-weight:600;color:var(--warning);">(You)</span>' : ''}
+              </div>
+              <div class="rank-meta">${m.skill} &middot; <span style="color:var(--warning);">${stars}</span> <span style="color:var(--text-muted);font-size:12px;">${m.rating.toFixed(1)}</span></div>
+            </div>
+            <div class="rank-stat-mentor"><strong>${m.sessions}</strong> sessions</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function buildColleges() {
+      const colleges = [...(leaderboard.colleges || [])]
+        .sort((a, b) => (b.totalSkillPoints || 0) - (a.totalSkillPoints || 0));
+      return colleges;
+    }
+
+    function renderColleges() {
+      const list = document.getElementById('collegesList');
+      const colleges = buildColleges();
+      if (colleges.length === 0) {
+        list.innerHTML = '<p class="no-data">No college data available.</p>';
+        return;
+      }
+
+      const maxPoints = colleges[0]?.totalSkillPoints || 1;
+
+      list.innerHTML = colleges.map((c, i) => {
+        const pct = Math.round(((c.totalSkillPoints || 0) / maxPoints) * 100);
+        return `
+          <div class="rank-card">
+            <div class="rank-number ${i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : ''}">
+              ${i < 3 ? getRankEmoji(i) : '#' + (i + 1)}
+            </div>
+            <div class="rank-info">
+              <div class="rank-name">${c.name}</div>
+              <div class="rank-meta">${(c.students || 0).toLocaleString()} students</div>
+            </div>
+            <div class="college-progress">
+              <div class="progress-bar">
+                <div class="progress-bar-fill ${i === 0 ? 'success' : ''}" style="width:${pct}%"></div>
+              </div>
+              <div class="progress-bar-label">
+                <span class="progress-bar-text">${pct}%</span>
+                <span class="progress-bar-percent">⭐ ${(c.totalSkillPoints || 0).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderLearners();
+    renderMentors();
+    renderColleges();
+
+    document.querySelectorAll('[data-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById(btn.dataset.tab + 'Tab').classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

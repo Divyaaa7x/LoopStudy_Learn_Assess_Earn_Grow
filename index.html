@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoopStudy - Learn, Assess, Earn and Grow</title>
+  <link rel="stylesheet" href="css/main.css?v=2">
+  <script src="js/storage.js?v=2"></script>
+  <style>
+    .landing-page { min-height: 100vh; background: #1E1E2E; color: #fff; overflow-x: hidden; }
+    .section-header { text-align: center; margin-bottom: 48px; }
+    .section-header h2 { font-size: 32px; font-weight: 700; margin: 0 0 12px; background: linear-gradient(135deg, #6C63FF, #FF6B6B); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .section-header p { font-size: 16px; color: #aaa; margin: 0 auto; max-width: 600px; }
+    .hero-section { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 80px 24px; }
+    .hero-bg-gradient { position: absolute; inset: 0; background: linear-gradient(135deg, #1E1E2E 0%, #2D1B69 30%, #1E1E2E 60%, #3D1B2E 100%); z-index: 0; }
+    .hero-bg-gradient::before { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%); top: -200px; right: -200px; animation: float 8s ease-in-out infinite; }
+    .hero-bg-gradient::after { content: ''; position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(255,107,107,0.1) 0%, transparent 70%); bottom: -150px; left: -150px; animation: float 10s ease-in-out infinite reverse; }
+    @keyframes float { 0%,100% { transform: translate(0,0); } 50% { transform: translate(30px,-30px); } }
+    .hero-content { position: relative; z-index: 1; text-align: center; max-width: 800px; }
+    .hero-title { font-size: clamp(48px,10vw,96px); font-weight: 800; margin: 0 0 16px; background: linear-gradient(135deg, #6C63FF, #FF6B6B, #FFD600); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: titleGlow 3s ease-in-out infinite; }
+    @keyframes titleGlow { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.2); } }
+    .hero-tagline { font-size: clamp(20px,3vw,32px); font-weight: 600; margin: 0 0 16px; color: #fff; }
+    .hero-subtitle { font-size: clamp(14px,2vw,18px); color: #aaa; margin: 0 0 40px; line-height: 1.6; }
+    .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .cta-primary, .cta-secondary { padding: 16px 36px; border-radius: 12px; font-size: 16px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; display: inline-block; }
+    .cta-primary { background: linear-gradient(135deg, #6C63FF, #5a52e0); color: #fff; box-shadow: 0 4px 20px rgba(108,99,255,0.4); }
+    .cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.6); }
+    .cta-secondary { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,0.3); }
+    .cta-secondary:hover { border-color: #6C63FF; background: rgba(108,99,255,0.1); transform: translateY(-2px); }
+    .features-section, .how-it-works-section, .stats-section, .mentors-section, .learners-section, .testimonials-section { padding: 80px 24px; max-width: 1200px; margin: 0 auto; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 24px; }
+    .feature-card { background: #2D2D3A; border-radius: 16px; padding: 32px 24px; text-align: center; border: 1px solid #3a3a4a; transition: all 0.3s ease; cursor: default; }
+    .feature-card:hover { transform: translateY(-6px); border-color: #6C63FF44; box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
+    .feature-icon { font-size: 48px; margin-bottom: 16px; line-height: 1; }
+    .feature-title { font-size: 18px; font-weight: 600; margin: 0 0 8px; color: #fff; }
+    .feature-desc { font-size: 14px; color: #aaa; margin: 0; line-height: 1.6; }
+    .steps-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 32px; position: relative; }
+    .step-card { background: #2D2D3A; border-radius: 16px; padding: 36px 24px; text-align: center; border: 1px solid #3a3a4a; position: relative; transition: all 0.3s ease; cursor: default; }
+    .step-card:hover { transform: translateY(-4px); border-color: #6C63FF44; }
+    .step-number { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #6C63FF, #FF6B6B); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; }
+    .step-icon { font-size: 48px; margin-bottom: 12px; line-height: 1; }
+    .step-title { font-size: 18px; font-weight: 600; margin: 0 0 8px; color: #fff; }
+    .step-desc { font-size: 14px; color: #aaa; margin: 0; line-height: 1.6; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 24px; }
+    .stat-item { background: #2D2D3A; border-radius: 16px; padding: 28px 24px; display: flex; align-items: center; gap: 20px; border: 1px solid #3a3a4a; transition: transform 0.3s ease; cursor: default; }
+    .stat-item:hover { transform: translateY(-4px); }
+    .stat-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+    .stat-info { display: flex; flex-direction: column; }
+    .counter-value { font-size: 28px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .stat-label { font-size: 14px; color: #aaa; margin-top: 2px; }
+    .mentors-grid, .learners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px,1fr)); gap: 24px; }
+    .mentor-card-v { background: #2D2D3A; border-radius: 12px; overflow: hidden; border: 1px solid #3a3a4a; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+    .mentor-card-v:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .mentor-card-body { padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .mentor-photo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #6C63FF; }
+    .mentor-name { font-size: 16px; font-weight: 600; color: #fff; margin: 0; }
+    .mentor-skill { font-size: 13px; color: #6C63FF; font-weight: 500; }
+    .mentor-rating { color: #FFD600; font-size: 16px; letter-spacing: 2px; }
+    .mentor-rating-num { color: #aaa; font-size: 13px; margin-left: 6px; letter-spacing: 0; }
+    .mentor-meta { padding: 0 24px 16px; display: flex; justify-content: space-between; font-size: 13px; color: #aaa; }
+    .mentor-meta-item { text-align: center; }
+    .mentor-meta-item div:first-child { font-weight: 600; color: #fff; }
+    .mentor-cost { font-weight: 600; color: #00C853; }
+    .mentor-btn-wrap { padding: 0 24px 24px; }
+    .view-profile-btn { display: block; text-align: center; padding: 10px 0; background: #6C63FF; color: #fff; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.2s; }
+    .view-profile-btn:hover { background: #5a52e0; }
+    .learner-card { background: #2D2D3A; border-radius: 16px; padding: 28px 24px; text-align: center; border: 1px solid #3a3a4a; transition: all 0.3s ease; cursor: default; }
+    .learner-card:hover { transform: translateY(-4px); border-color: #FFD60044; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .learner-avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 3px solid #FFD600; margin-bottom: 12px; }
+    .learner-name { font-size: 16px; font-weight: 600; color: #fff; margin: 0 0 4px; }
+    .learner-college { font-size: 13px; color: #aaa; display: block; margin-bottom: 8px; }
+    .learner-points { font-size: 14px; font-weight: 600; color: #FFD600; }
+    .no-data-text { grid-column: 1/-1; text-align: center; color: #777; font-size: 16px; padding: 40px; }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 24px; }
+    .testimonial-card { background: #2D2D3A; border-radius: 16px; padding: 32px 24px; border: 1px solid #3a3a4a; transition: all 0.3s ease; cursor: default; }
+    .testimonial-card:hover { transform: translateY(-4px); border-color: #6C63FF44; }
+    .testimonial-stars { color: #FFD600; font-size: 18px; margin-bottom: 12px; letter-spacing: 2px; }
+    .testimonial-text { font-size: 15px; color: #ddd; line-height: 1.7; margin: 0 0 20px; font-style: italic; }
+    .testimonial-author { display: flex; align-items: center; gap: 12px; }
+    .testimonial-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+    .testimonial-name { font-size: 14px; font-weight: 600; color: #fff; }
+    .testimonial-role { font-size: 12px; color: #aaa; }
+    .fade-in-hidden { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+    .fade-in-visible { opacity: 1; transform: translateY(0); }
+    @media (max-width: 768px) {
+      .features-section, .how-it-works-section, .stats-section, .mentors-section, .learners-section, .testimonials-section { padding: 48px 16px; }
+      .section-header h2 { font-size: 26px; }
+      .features-grid, .mentors-grid, .learners-grid, .testimonials-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .steps-container { grid-template-columns: 1fr 1fr; }
+      .hero-section { min-height: 80vh; padding: 60px 16px; }
+      .hero-cta { flex-direction: column; align-items: center; }
+      .cta-primary, .cta-secondary { width: 100%; max-width: 280px; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .steps-container { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="landing-page">
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a href="index.html" class="navbar-brand">LoopStudy</a>
+      <ul class="navbar-links" id="navLinks">
+        <li><a href="index.html" class="navbar-link active">Home</a></li>
+        <li><a href="login.html" class="navbar-link">Login</a></li>
+        <li><a href="register.html" class="navbar-link">Register</a></li>
+      </ul>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu">&#9776;</button>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-bg-gradient"></div>
+      <div class="hero-content">
+        <h1 class="hero-title">LoopStudy</h1>
+        <p class="hero-tagline">Learn, Assess, Earn and Grow</p>
+        <p class="hero-subtitle">The ultimate platform for students to build skills, connect with mentors, and compete with colleges.</p>
+        <div class="hero-cta">
+          <a href="register.html" class="cta-primary">Start Learning</a>
+          <a href="register.html?mentor=true" class="cta-secondary">Become a Mentor</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section fade-in-hidden" data-delay="0">
+      <div class="section-header">
+        <h2>Everything You Need to Succeed</h2>
+        <p>Discover tools and features designed to accelerate your learning journey.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card fade-in-hidden" data-delay="50"><div class="feature-icon">&#129309;</div><h3 class="feature-title">Skill Sharing</h3><p class="feature-desc">Share knowledge and learn from peers in a collaborative environment.</p></div>
+        <div class="feature-card fade-in-hidden" data-delay="100"><div class="feature-icon">&#129489;&#8205;&#127979;</div><h3 class="feature-title">Mentor Marketplace</h3><p class="feature-desc">Connect with expert mentors for personalized guidance.</p></div>
+        <div class="feature-card fade-in-hidden" data-delay="150"><div class="feature-icon">&#128203;</div><h3 class="feature-title">Assessments</h3><p class="feature-desc">Test your knowledge with subject-wise assessments.</p></div>
+        <div class="feature-card fade-in-hidden" data-delay="200"><div class="feature-icon">&#11088;</div><h3 class="feature-title">SkillPoints</h3><p class="feature-desc">Earn points for every learning activity you complete.</p></div>
+        <div class="feature-card fade-in-hidden" data-delay="250"><div class="feature-icon">&#127941;</div><h3 class="feature-title">Badges</h3><p class="feature-desc">Unlock achievement badges as you hit milestones.</p></div>
+        <div class="feature-card fade-in-hidden" data-delay="300"><div class="feature-icon">&#128200;</div><h3 class="feature-title">Levels</h3><p class="feature-desc">Progress through levels as you accumulate SkillPoints.</p></div>
+        <div class="feature-card fade-in-hidden" data-delay="350"><div class="feature-icon">&#127919;</div><h3 class="feature-title">Challenges</h3><p class="feature-desc">Take on daily and weekly challenges for bonus rewards.</p></div>
+        <div class="feature-card fade-in-hidden" data-delay="400"><div class="feature-icon">&#128506;&#65039;</div><h3 class="feature-title">Skill Paths</h3><p class="feature-desc">Follow structured learning paths to master any skill.</p></div>
+        <div class="feature-card fade-in-hidden" data-delay="450"><div class="feature-icon">&#127963;&#65039;</div><h3 class="feature-title">College Competition</h3><p class="feature-desc">Compete with your college against others on the leaderboard.</p></div>
+        <div class="feature-card fade-in-hidden" data-delay="500"><div class="feature-icon">&#127942;</div><h3 class="feature-title">Leaderboards</h3><p class="feature-desc">See how you rank among learners and mentors.</p></div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works-section fade-in-hidden" data-delay="0">
+      <div class="section-header">
+        <h2>How It Works</h2>
+        <p>Four simple steps to transform your learning experience.</p>
+      </div>
+      <div class="steps-container">
+        <div class="step-card fade-in-hidden" data-delay="50"><div class="step-number">1</div><div class="step-icon">&#128218;</div><h3 class="step-title">Learn</h3><p class="step-desc">Explore skill paths and learn from curated content.</p></div>
+        <div class="step-card fade-in-hidden" data-delay="150"><div class="step-number">2</div><div class="step-icon">&#128221;</div><h3 class="step-title">Assess</h3><p class="step-desc">Take assessments to test your understanding.</p></div>
+        <div class="step-card fade-in-hidden" data-delay="250"><div class="step-number">3</div><div class="step-icon">&#11088;</div><h3 class="step-title">Earn</h3><p class="step-desc">Collect SkillPoints, badges, and achievements.</p></div>
+        <div class="step-card fade-in-hidden" data-delay="350"><div class="step-number">4</div><div class="step-icon">&#128640;</div><h3 class="step-title">Grow</h3><p class="step-desc">Level up and unlock new opportunities.</p></div>
+      </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section fade-in-hidden" id="statsSection" data-delay="0">
+      <div class="section-header">
+        <h2>Our Impact in Numbers</h2>
+        <p>Join a growing community of learners and mentors.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-item fade-in-hidden" data-delay="50" style="border-color: rgba(108,99,255,0.2);"><div class="stat-icon" style="background: rgba(108,99,255,0.1);color:#6C63FF;">&#128104;&#8205;&#127891;</div><div class="stat-info"><span class="counter-value" data-target="2500" data-suffix="k+">0</span><span class="stat-label">Total Students</span></div></div>
+        <div class="stat-item fade-in-hidden" data-delay="100" style="border-color: rgba(255,107,107,0.2);"><div class="stat-icon" style="background: rgba(255,107,107,0.1);color:#FF6B6B;">&#129489;&#8205;&#127979;</div><div class="stat-info"><span class="counter-value" data-target="150" data-suffix="+">0</span><span class="stat-label">Total Mentors</span></div></div>
+        <div class="stat-item fade-in-hidden" data-delay="150" style="border-color: rgba(0,200,83,0.2);"><div class="stat-icon" style="background: rgba(0,200,83,0.1);color:#00C853;">&#128197;</div><div class="stat-info"><span class="counter-value" data-target="5000" data-suffix="k+">0</span><span class="stat-label">Sessions Completed</span></div></div>
+        <div class="stat-item fade-in-hidden" data-delay="200" style="border-color: rgba(33,150,243,0.2);"><div class="stat-icon" style="background: rgba(33,150,243,0.1);color:#2196F3;">&#128221;</div><div class="stat-info"><span class="counter-value" data-target="3000" data-suffix="k+">0</span><span class="stat-label">Assessments Completed</span></div></div>
+        <div class="stat-item fade-in-hidden" data-delay="250" style="border-color: rgba(255,214,0,0.2);"><div class="stat-icon" style="background: rgba(255,214,0,0.1);color:#FFD600;">&#11088;</div><div class="stat-info"><span class="counter-value" data-target="100000" data-suffix="k+">0</span><span class="stat-label">SkillPoints Earned</span></div></div>
+      </div>
+    </section>
+
+    <!-- Top Mentors Section -->
+    <section class="mentors-section fade-in-hidden" id="topMentorsSection" data-delay="0">
+      <div class="section-header">
+        <h2>Top Mentors</h2>
+        <p>Learn from the best in the community.</p>
+      </div>
+      <div class="mentors-grid" id="mentorsGrid"></div>
+    </section>
+
+    <!-- Top Learners Section -->
+    <section class="learners-section fade-in-hidden" data-delay="0">
+      <div class="section-header">
+        <h2>Top Learners</h2>
+        <p>Meet the most active learners on LoopStudy.</p>
+      </div>
+      <div class="learners-grid" id="learnersGrid"></div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section fade-in-hidden" data-delay="0">
+      <div class="section-header">
+        <h2>What Our Users Say</h2>
+        <p>Hear from students who transformed their learning journey.</p>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card fade-in-hidden" data-delay="50"><div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="testimonial-text">"LoopStudy transformed the way I learn. The mentorship sessions helped me crack my dream internship!"</p><div class="testimonial-author"><img src="https://ui-avatars.com/api/?name=Priya+Sharma&background=6C63FF&color=fff" alt="Priya Sharma" class="testimonial-avatar"><div><div class="testimonial-name">Priya Sharma</div><div class="testimonial-role">Computer Science Student</div></div></div></div>
+        <div class="testimonial-card fade-in-hidden" data-delay="150"><div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="testimonial-text">"The skill paths are incredibly well-structured. I went from zero to building ML models in 3 months."</p><div class="testimonial-author"><img src="https://ui-avatars.com/api/?name=Rahul+Verma&background=FF6B6B&color=fff" alt="Rahul Verma" class="testimonial-avatar"><div><div class="testimonial-name">Rahul Verma</div><div class="testimonial-role">Data Science Enthusiast</div></div></div></div>
+        <div class="testimonial-card fade-in-hidden" data-delay="250"><div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p class="testimonial-text">"Earning SkillPoints and competing on the leaderboard keeps me motivated to learn every day."</p><div class="testimonial-author"><img src="https://ui-avatars.com/api/?name=Ananya+Gupta&background=00C853&color=fff" alt="Ananya Gupta" class="testimonial-avatar"><div><div class="testimonial-name">Ananya Gupta</div><div class="testimonial-role">Web Developer</div></div></div></div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-container">
+        <div>
+          <a href="index.html" class="footer-brand">LoopStudy</a>
+          <p class="footer-desc">Empowering students to learn, connect, and grow through interactive skill-building and mentorship.</p>
+        </div>
+        <div>
+          <div class="footer-section-title">Quick Links</div>
+          <ul class="footer-links">
+            <li><a href="index.html" class="footer-link">Home</a></li>
+            <li><a href="login.html" class="footer-link">Login</a></li>
+            <li><a href="register.html" class="footer-link">Register</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-section-title">Resources</div>
+          <ul class="footer-links">
+            <li><a href="#" class="footer-link">Mentors</a></li>
+            <li><a href="#" class="footer-link">Assessments</a></li>
+            <li><a href="#" class="footer-link">Leaderboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-section-title">Support</div>
+          <ul class="footer-links">
+            <li><a href="#" class="footer-link">FAQ</a></li>
+            <li><a href="#" class="footer-link">Contact Us</a></li>
+            <li><a href="#" class="footer-link">Privacy Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span class="footer-copy">&copy; 2026 LoopStudy. All rights reserved.</span>
+        <div class="footer-social">
+          <a href="#" title="Twitter">&#120143;</a>
+          <a href="#" title="LinkedIn">&#120156;</a>
+          <a href="#" title="GitHub">&#120055;</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Hamburger menu
+    document.getElementById('hamburgerBtn').addEventListener('click', function() {
+      document.getElementById('navLinks').classList.toggle('open');
+    });
+
+    // Fade-in on scroll with IntersectionObserver
+    (function initFadeIn() {
+      var els = document.querySelectorAll('.fade-in-hidden');
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            var delay = parseInt(entry.target.getAttribute('data-delay')) || 0;
+            setTimeout(function() {
+              entry.target.classList.remove('fade-in-hidden');
+              entry.target.classList.add('fade-in-visible');
+            }, delay);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      els.forEach(function(el) { observer.observe(el); });
+    })();
+
+    // Counter animation
+    (function initCounters() {
+      var statsSection = document.getElementById('statsSection');
+      if (!statsSection) return;
+      var counters = statsSection.querySelectorAll('.counter-value');
+      var counterObserver = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            counters.forEach(function(el) {
+              var target = parseInt(el.getAttribute('data-target')) || 0;
+              var suffix = el.getAttribute('data-suffix') || '';
+              var duration = 1500;
+              var steps = 40;
+              var increment = target / steps;
+              var current = 0;
+              var timer = setInterval(function() {
+                current += increment;
+                if (current >= target) {
+                  var finalVal = target >= 1000 ? (target / 1000).toFixed(target >= 100000 ? 0 : 1) + suffix : target + suffix;
+                  el.textContent = finalVal;
+                  clearInterval(timer);
+                } else {
+                  el.textContent = Math.floor(current);
+                }
+              }, duration / steps);
+            });
+            counterObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.3 });
+      counterObserver.observe(statsSection);
+    })();
+
+    // Render mentors from inline data
+    (function renderMentors() {
+      var grid = document.getElementById('mentorsGrid');
+      if (!grid) return;
+      var mentors = [
+        { name: 'Arjun Sharma', photo: 'https://ui-avatars.com/api/?name=Arjun+Sharma&background=4f46e5&color=fff&size=200', skill: 'Python', rating: 4.8, experience: 5, sessions: 340, cost: 50 },
+        { name: 'Neha Patel', photo: 'https://ui-avatars.com/api/?name=Neha+Patel&background=7c3aed&color=fff&size=200', skill: 'Java', rating: 4.6, experience: 4, sessions: 280, cost: 45 },
+        { name: 'Vikram Reddy', photo: 'https://ui-avatars.com/api/?name=Vikram+Reddy&background=2563eb&color=fff&size=200', skill: 'Web Development', rating: 4.9, experience: 6, sessions: 510, cost: 60 },
+        { name: 'Sanya Gupta', photo: 'https://ui-avatars.com/api/?name=Sanya+Gupta&background=db2777&color=fff&size=200', skill: 'React', rating: 4.7, experience: 3, sessions: 190, cost: 55 }
+      ];
+      mentors.forEach(function(m) {
+        var fullStars = Math.floor(m.rating);
+        var halfStar = m.rating % 1 >= 0.5 ? 1 : 0;
+        var emptyStars = 5 - fullStars - halfStar;
+        var stars = '';
+        for (var i = 0; i < fullStars; i++) stars += '&#9733;';
+        if (halfStar) stars += '&#9733;';
+        for (var i = 0; i < emptyStars; i++) stars += '&#9734;';
+
+        var card = document.createElement('div');
+        card.className = 'mentor-card-v fade-in-hidden';
+        card.setAttribute('data-delay', '50');
+        card.innerHTML =
+          '<div class="mentor-card-body">' +
+            '<img src="' + m.photo + '" alt="' + m.name + '" class="mentor-photo">' +
+            '<div style="text-align:center;">' +
+              '<div class="mentor-name">' + m.name + '</div>' +
+              '<div class="mentor-skill">' + m.skill + '</div>' +
+            '</div>' +
+            '<div class="mentor-rating">' + stars + '<span class="mentor-rating-num">' + m.rating + '</span></div>' +
+          '</div>' +
+          '<div class="mentor-meta">' +
+            '<div class="mentor-meta-item"><div>' + m.experience + '</div><div>Years Exp.</div></div>' +
+            '<div class="mentor-meta-item"><div>' + m.sessions + '</div><div>Sessions</div></div>' +
+            '<div class="mentor-meta-item"><div class="mentor-cost">&#11088;' + m.cost + '</div><div>Cost</div></div>' +
+          '</div>' +
+          '<div class="mentor-btn-wrap"><a href="#" class="view-profile-btn" onclick="event.preventDefault();alert(\'View Profile - Coming soon\')">View Profile</a></div>';
+        grid.appendChild(card);
+      });
+      // Observe new mentor cards
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            var delay = parseInt(entry.target.getAttribute('data-delay')) || 0;
+            setTimeout(function() {
+              entry.target.classList.remove('fade-in-hidden');
+              entry.target.classList.add('fade-in-visible');
+            }, delay);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      grid.querySelectorAll('.fade-in-hidden').forEach(function(el) { observer.observe(el); });
+    })();
+
+    // Render top learners from localStorage
+    (function renderLearners() {
+      var grid = document.getElementById('learnersGrid');
+      if (!grid) return;
+      try {
+        var users = JSON.parse(localStorage.getItem('loopstudy_users') || '[]');
+        if (!users.length) {
+          grid.innerHTML = '<p class="no-data-text">No learners yet. Be the first to join!</p>';
+          return;
+        }
+        var withPoints = users.map(function(u) {
+          var pts = 0;
+          try {
+            var profile = JSON.parse(localStorage.getItem('loopstudy_profile_' + u.id) || '{}');
+            pts = profile.skillPoints || 0;
+          } catch(e) {}
+          return { name: u.name, college: u.college || 'Unknown College', avatar: u.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.name), skillPoints: pts };
+        });
+        withPoints.sort(function(a, b) { return b.skillPoints - a.skillPoints; });
+        var top = withPoints.slice(0, 4);
+        if (!top.length) {
+          grid.innerHTML = '<p class="no-data-text">No learners yet. Be the first to join!</p>';
+          return;
+        }
+        top.forEach(function(u) {
+          var card = document.createElement('div');
+          card.className = 'learner-card fade-in-hidden';
+          card.setAttribute('data-delay', '50');
+          card.innerHTML =
+            '<img src="' + u.avatar + '" alt="' + u.name + '" class="learner-avatar">' +
+            '<h4 class="learner-name">' + u.name + '</h4>' +
+            '<span class="learner-college">' + u.college + '</span>' +
+            '<div class="learner-points">&#11088; ' + u.skillPoints + ' pts</div>';
+          grid.appendChild(card);
+        });
+        var observer = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              var delay = parseInt(entry.target.getAttribute('data-delay')) || 0;
+              setTimeout(function() {
+                entry.target.classList.remove('fade-in-hidden');
+                entry.target.classList.add('fade-in-visible');
+              }, delay);
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1 });
+        grid.querySelectorAll('.fade-in-hidden').forEach(function(el) { observer.observe(el); });
+      } catch(e) {
+        grid.innerHTML = '<p class="no-data-text">No learners yet. Be the first to join!</p>';
+      }
+    })();
+  </script>
+</body>
+</html>

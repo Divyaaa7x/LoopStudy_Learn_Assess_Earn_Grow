@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - LoopStudy</title>
+  <link rel="stylesheet" href="css/main.css?v=2">
+  <link rel="stylesheet" href="css/components.css?v=2">
+  <style>
+    .profile-page {
+      min-height: 100vh;
+      background: var(--dark);
+      padding: 32px 24px;
+    }
+    .profile-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .profile-header-card {
+      background: linear-gradient(135deg, #2D1B69, #3D1B2E);
+      border-radius: 20px;
+      padding: 32px 36px;
+      border: 1px solid rgba(108, 99, 255, 0.13);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 28px;
+      align-items: start;
+    }
+    .profile-avatar-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--primary);
+    }
+    .avatar-url-edit {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .avatar-url-edit label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .avatar-url-edit input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--dark);
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .avatar-url-edit input:focus {
+      border-color: var(--primary);
+    }
+    .profile-header-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .profile-name {
+      font-size: 30px;
+      font-weight: 700;
+      color: #fff;
+      margin: 0;
+    }
+    .profile-name-edit {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .profile-name-edit label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .profile-name-edit input {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--dark);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .profile-name-edit input:focus {
+      border-color: var(--primary);
+    }
+    .profile-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .profile-college {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .mentor-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(0, 200, 83, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(0, 200, 83, 0.3);
+    }
+    .profile-bio {
+      font-size: 14px;
+      color: #ccc;
+      line-height: 1.6;
+      margin: 4px 0 0;
+      max-width: 500px;
+    }
+    .profile-bio-edit {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .profile-bio-edit label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .profile-bio-edit textarea {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--dark);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+      font-family: inherit;
+      max-width: 500px;
+    }
+    .profile-bio-edit textarea:focus {
+      border-color: var(--primary);
+    }
+    .profile-header-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+    }
+    .profile-stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+    }
+    .profile-stat {
+      background: var(--dark2);
+      border-radius: 14px;
+      padding: 20px 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+      transition: transform 0.2s;
+      cursor: default;
+    }
+    .profile-stat:hover {
+      transform: translateY(-2px);
+    }
+    .profile-stat-value {
+      display: block;
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .profile-stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .profile-section {
+      background: var(--dark2);
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid var(--border);
+    }
+    .profile-section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      margin: 0 0 20px;
+    }
+    .skills-edit-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .skill-chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .skill-chip:hover {
+      border-color: rgba(108, 99, 255, 0.27);
+      color: var(--text);
+    }
+    .skill-chip.selected {
+      background: rgba(108, 99, 255, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .badge-card {
+      background: var(--dark2);
+      border-radius: 14px;
+      padding: 24px 20px;
+      border: 1px solid var(--border);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .badge-card.locked {
+      opacity: 0.6;
+    }
+    .badge-card.unlocked {
+      border-color: rgba(0,200,83,0.3);
+    }
+    .badge-icon {
+      font-size: 36px;
+      line-height: 1;
+    }
+    .badge-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .badge-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin: 0;
+    }
+    .badge-status {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 10px;
+    }
+    .badge-status.unlocked {
+      background: rgba(0,200,83,0.15);
+      color: var(--success);
+    }
+    .badge-status.locked {
+      background: rgba(255,107,107,0.15);
+      color: var(--secondary);
+    }
+    .no-data-text {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      padding: 24px;
+      margin: 0;
+    }
+    .rewards-active {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .reward-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      background: rgba(108,99,255,0.12);
+      color: var(--primary);
+      border: 1px solid rgba(108,99,255,0.25);
+    }
+    .edit-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .save-profile-btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      white-space: nowrap;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+    }
+    .save-profile-btn:hover:not(:disabled) {
+      box-shadow: 0 4px 16px rgba(108, 99, 255, 0.4);
+    }
+    .save-profile-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .update-pwd-btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      white-space: nowrap;
+      background: var(--primary);
+      color: #fff;
+    }
+    .update-pwd-btn:hover {
+      background: var(--primary-dark);
+    }
+    .password-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .pwd-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .pwd-field label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .pwd-field input {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--dark);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .pwd-field input:focus {
+      border-color: var(--primary);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-field label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+    .form-field input, .form-field select, .form-field textarea {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--dark);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+      border-color: var(--primary);
+    }
+    .form-field select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+    .form-field select option {
+      background: var(--dark2);
+      color: #fff;
+    }
+    .form-field input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .form-field textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    @media (max-width: 768px) {
+      .profile-page { padding: 16px; }
+      .profile-header-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 24px 20px;
+      }
+      .profile-avatar-section { align-items: center; }
+      .profile-header-info { align-items: center; }
+      .profile-meta { justify-content: center; }
+      .profile-bio { text-align: center; }
+      .profile-header-actions { align-items: center; }
+      .profile-stats-row { grid-template-columns: repeat(3, 1fr); }
+      .badges-grid { grid-template-columns: repeat(2, 1fr); }
+      .form-grid { grid-template-columns: 1fr; }
+      .password-fields { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .profile-stats-row { grid-template-columns: repeat(2, 1fr); }
+      .badges-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="navbar" id="navbar"></nav>
+
+    <div class="profile-page">
+      <div class="profile-container" id="appContent">
+        <div class="page-loader" id="pageLoader">
+          <div class="loader-spinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer" id="footer"></footer>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    var currentUser = (function() {
+      try { return JSON.parse(localStorage.getItem('loopstudy_currentUser')); }
+      catch { return null; }
+    })();
+    if (!currentUser) { window.location.replace('login.html'); }
+
+    var userId = currentUser.id;
+    var profileKey = 'loopstudy_profile_' + userId;
+    var badgesKey = 'loopstudy_badges_' + userId;
+    var rewardsKey = 'loopstudy_rewards_' + userId;
+    var usersKey = 'loopstudy_users';
+
+    var ALL_SKILLS = ['Python', 'Java', 'Web Development', 'React', 'Data Science', 'Machine Learning'];
+    var COLLEGES = [
+      '', 'Anurag University', 'Srinidhi University', 'Nalla Malla Reddy University',
+      'Malla Reddy University', 'Indian Institute of Technology Bombay',
+      'Indian Institute of Technology Delhi', 'National Institute of Technology Trichy',
+      'Vellore Institute of Technology', 'SRM Institute of Science and Technology',
+      'Manipal Institute of Technology', 'International Institute of Information Technology Hyderabad'
+    ];
+
+    function lsGet(key) {
+      try { return JSON.parse(localStorage.getItem(key)); }
+      catch { return null; }
+    }
+    function lsSet(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+      catch { return false; }
+    }
+
+    function getProfile() {
+      var data = lsGet(profileKey);
+      if (!data) {
+        data = {
+          profile: {
+            name: currentUser.name || '',
+            email: currentUser.email || '',
+            college: currentUser.college || '',
+            skills: currentUser.skills || [],
+            bio: '',
+            avatar: currentUser.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name || 'U'),
+            mentorStatus: currentUser.mentorStatus || false,
+          },
+          skillPoints: 0,
+          level: 1,
+          streak: { current: 0, best: 0, lastActive: null },
+          sessionsCompleted: 0,
+          assessmentsCompleted: 0,
+          transactions: [],
+        };
+        lsSet(profileKey, data);
+      }
+      return data;
+    }
+
+    var profileData = getProfile();
+    var p = profileData.profile || {};
+    var badges = lsGet(badgesKey) || [];
+    var rewards = lsGet(rewardsKey) || { purchasedRewards: [], activeTheme: null, activeFrame: null, activeTitle: null };
+
+    function showToast(msg, type) {
+      var c = document.getElementById('toastContainer');
+      var t = document.createElement('div');
+      t.className = 'toast ' + (type || 'info');
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(function() { t.remove(); }, 3500);
+    }
+
+    function renderNav() {
+      var links = [
+        { label: 'Dashboard', href: 'dashboard.html', icon: '&#x1F3E0;' },
+        { label: 'Profile', href: 'profile.html', icon: '&#x1F464;' },
+        { label: 'Mentors', href: 'mentors.html', icon: '&#x1F468;&#x200D;&#x1F393;' },
+        { label: 'Sessions', href: 'sessions.html', icon: '&#x1F4C5;' },
+        { label: 'Assessments', href: 'assessments.html', icon: '&#x1F9EA;' },
+        { label: 'Achievements', href: 'achievements.html', icon: '&#x1F3C6;' },
+        { label: 'Rewards', href: 'rewards.html', icon: '&#x1F381;' },
+        { label: 'Leaderboard', href: 'leaderboard.html', icon: '&#x1F3C6;' },
+        { label: 'Growth Center', href: 'growth-center.html', icon: '&#x1F331;' },
+        { label: 'Settings', href: 'settings.html', icon: '&#x2699;&#xFE0F;' },
+      ];
+      var sp = profileData.skillPoints || 0;
+      var html = '<a href="dashboard.html" class="navbar-brand">&#x1F4A1; LoopStudy</a>';
+      html += '<button class="hamburger-btn" onclick="toggleNav()">&#x2630;</button>';
+      html += '<ul class="navbar-links" id="navLinks">';
+      for (var i = 0; i < links.length; i++) {
+        var active = links[i].href === 'profile.html' ? ' active' : '';
+        html += '<li><a href="' + links[i].href + '" class="navbar-link' + active + '">' + links[i].icon + ' ' + links[i].label + '</a></li>';
+      }
+      html += '</ul>';
+      html += '<div class="navbar-right">';
+      html += '<div class="navbar-user" onclick="window.location=\'profile.html\'">';
+      html += '<img class="navbar-avatar" src="' + (p.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(p.name || 'U')) + '" alt="Avatar">';
+      html += '<span class="navbar-username">' + (p.name || 'User') + '</span>';
+      html += '<span class="navbar-points">&#x2B50; ' + sp + '</span>';
+      html += '</div>';
+      html += '<button class="btn btn-outline btn-sm" onclick="handleLogout()">Logout</button>';
+      html += '</div>';
+      document.getElementById('navbar').innerHTML = html;
+    }
+
+    function toggleNav() {
+      document.getElementById('navLinks').classList.toggle('open');
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('loopstudy_currentUser');
+      window.location.replace('login.html');
+    }
+
+    function renderFooter() {
+      var html = '<div class="footer-container">';
+      html += '<div><a href="dashboard.html" class="footer-brand">&#x1F4A1; LoopStudy</a><p class="footer-desc">Empowering students to learn, connect, and grow through peer-to-peer mentorship and skill-building.</p></div>';
+      html += '<div><h4 class="footer-section-title">Quick Links</h4><ul class="footer-links"><li><a href="dashboard.html" class="footer-link">Dashboard</a></li><li><a href="mentors.html" class="footer-link">Mentors</a></li><li><a href="sessions.html" class="footer-link">Sessions</a></li><li><a href="leaderboard.html" class="footer-link">Leaderboard</a></li></ul></div>';
+      html += '<div><h4 class="footer-section-title">Resources</h4><ul class="footer-links"><li><a href="assessments.html" class="footer-link">Assessments</a></li><li><a href="achievements.html" class="footer-link">Achievements</a></li><li><a href="growth-center.html" class="footer-link">Growth Center</a></li><li><a href="rewards.html" class="footer-link">Rewards</a></li></ul></div>';
+      html += '<div><h4 class="footer-section-title">Support</h4><ul class="footer-links"><li><a href="settings.html" class="footer-link">Settings</a></li><li><a href="profile.html" class="footer-link">Profile</a></li></ul></div>';
+      html += '</div>';
+      html += '<div class="footer-bottom"><span class="footer-copy">&copy; 2025 LoopStudy. All rights reserved.</span><div class="footer-social"><a href="#">&#x1F426;</a><a href="#">&#x1F4F1;</a><a href="#">&#x1F4F8;</a></div></div>';
+      document.getElementById('footer').innerHTML = html;
+    }
+
+    function renderProfile() {
+      var container = document.getElementById('appContent');
+      var sp = profileData.skillPoints || 0;
+      var level = profileData.level || 1;
+      var streak = profileData.streak ? profileData.streak.current || 0 : 0;
+      var sessionsDone = profileData.sessionsCompleted || 0;
+      var assessmentsDone = profileData.assessmentsCompleted || 0;
+
+      // Header Card
+      var html = '<div class="profile-header-card">';
+      html += '<div class="profile-avatar-section">';
+      html += '<img class="profile-avatar" id="previewAvatar" src="' + (p.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(p.name || 'U')) + '" alt="Avatar">';
+      html += '<div class="avatar-url-edit">';
+      html += '<label for="avatarUrl">Avatar URL</label>';
+      html += '<input type="text" id="avatarUrl" value="' + (p.avatar || '') + '" placeholder="https://ui-avatars.com/api/?name=..." oninput="updateAvatarPreview()">';
+      html += '</div></div>';
+
+      html += '<div class="profile-header-info">';
+      html += '<div class="profile-name-edit"><label for="nameInput">Full Name</label><input type="text" id="nameInput" value="' + escapeHtml(p.name || '') + '"></div>';
+      html += '<div class="profile-meta">';
+      html += '<span class="profile-college">' + escapeHtml(p.email || '') + '</span>';
+      html += '<span class="skill-points-badge">&#x2B50; ' + sp + ' SkillPoints</span>';
+      if (p.mentorStatus) {
+        html += '<span class="mentor-badge">&#x1F393; Mentor</span>';
+      }
+      html += '</div>';
+      html += '<div class="profile-bio-edit"><label for="bioInput">Bio</label><textarea id="bioInput" rows="3" placeholder="Tell us about yourself...">' + escapeHtml(p.bio || '') + '</textarea></div>';
+      html += '</div>';
+
+      html += '<div class="profile-header-actions">';
+      html += '<div class="level-badge level-badge-lg">' + level + '</div>';
+      html += '</div></div>';
+
+      // Edit Profile Form Section
+      html += '<div class="profile-section">';
+      html += '<h2 class="profile-section-title">&#x270F;&#xFE0F; Edit Profile</h2>';
+      html += '<div class="form-grid">';
+      html += '<div class="form-field"><label for="emailInput">Email</label><input type="text" id="emailInput" value="' + escapeHtml(p.email || '') + '" disabled></div>';
+      html += '<div class="form-field"><label for="collegeSelect">College</label><select id="collegeSelect">';
+      for (var ci = 0; ci < COLLEGES.length; ci++) {
+        var sel = COLLEGES[ci] === (p.college || '') ? ' selected' : '';
+        html += '<option value="' + escapeHtml(COLLEGES[ci]) + '"' + sel + '>' + (COLLEGES[ci] || 'Select College') + '</option>';
+      }
+      html += '</select></div></div>';
+      html += '<div class="form-field" style="margin-bottom:16px"><label>Skills</label><div class="skills-edit-grid" id="skillsGrid">';
+      var userSkills = p.skills || [];
+      for (var si = 0; si < ALL_SKILLS.length; si++) {
+        var selected = userSkills.indexOf(ALL_SKILLS[si]) !== -1 ? ' selected' : '';
+        html += '<span class="skill-chip' + selected + '" onclick="toggleSkill(this, \'' + ALL_SKILLS[si] + '\')">' + ALL_SKILLS[si] + '</span>';
+      }
+      html += '</div></div>';
+      html += '<div class="edit-actions"><button class="save-profile-btn" onclick="saveProfile()">Save Changes</button></div>';
+      html += '</div>';
+
+      // Update Password Section
+      html += '<div class="profile-section">';
+      html += '<h2 class="profile-section-title">&#x1F512; Update Password</h2>';
+      html += '<div class="password-fields">';
+      html += '<div class="pwd-field"><label for="currentPwd">Current Password</label><input type="password" id="currentPwd" placeholder="Enter current password"></div>';
+      html += '<div class="pwd-field"><label for="newPwd">New Password</label><input type="password" id="newPwd" placeholder="Enter new password"></div>';
+      html += '<div class="pwd-field"><label for="confirmPwd">Confirm New Password</label><input type="password" id="confirmPwd" placeholder="Confirm new password"></div>';
+      html += '</div>';
+      html += '<button class="update-pwd-btn" onclick="updatePassword()">Update Password</button>';
+      html += '</div>';
+
+      // Stats Section
+      html += '<div class="profile-section">';
+      html += '<h2 class="profile-section-title">&#x1F4CA; Statistics</h2>';
+      html += '<div class="profile-stats-row">';
+      var statItems = [
+        { value: sessionsDone, label: 'Sessions Completed' },
+        { value: assessmentsDone, label: 'Assessments Completed' },
+        { value: sp, label: 'SkillPoints' },
+        { value: level, label: 'Current Level' },
+        { value: streak, label: 'Streak' },
+      ];
+      for (var sti = 0; sti < statItems.length; sti++) {
+        html += '<div class="profile-stat"><span class="profile-stat-value">' + statItems[sti].value + '</span><span class="profile-stat-label">' + statItems[sti].label + '</span></div>';
+      }
+      html += '</div></div>';
+
+      // Badges Showcase
+      html += '<div class="profile-section">';
+      html += '<h2 class="profile-section-title">&#x1F3C6; Badges <span class="section-count">(' + badges.filter(function(b){return b.unlocked;}).length + '/' + badges.length + ')</span></h2>';
+      if (badges.length === 0) {
+        html += '<p class="no-data-text">No badges yet. Complete activities to earn badges!</p>';
+      } else {
+        html += '<div class="badges-grid">';
+        for (var bi = 0; bi < badges.length; bi++) {
+          var b = badges[bi];
+          var cls = b.unlocked ? 'unlocked' : 'locked';
+          var statusText = b.unlocked ? 'Unlocked' : 'Locked';
+          html += '<div class="badge-card ' + cls + '"><span class="badge-icon">' + (b.icon || '&#x1F3C6;') + '</span><span class="badge-name">' + escapeHtml(b.name || 'Badge') + '</span><p class="badge-desc">' + escapeHtml(b.description || '') + '</p><span class="badge-status ' + cls + '">' + statusText + '</span></div>';
+        }
+        html += '</div>';
+      }
+      html += '</div>';
+
+      // Active Rewards
+      html += '<div class="profile-section">';
+      html += '<h2 class="profile-section-title">&#x1F381; Active Rewards</h2>';
+      var purchased = rewards.purchasedRewards || [];
+      if (purchased.length === 0) {
+        html += '<p class="no-data-text">No rewards purchased yet. Visit the Rewards page to get started!</p>';
+      } else {
+        var activeItems = [];
+        if (rewards.activeTheme) {
+          var theme = purchased.find(function(r){return r.id === rewards.activeTheme;});
+          if (theme) activeItems.push(theme);
+        }
+        if (rewards.activeFrame) {
+          var frame = purchased.find(function(r){return r.id === rewards.activeFrame;});
+          if (frame) activeItems.push(frame);
+        }
+        if (rewards.activeTitle) {
+          var title = purchased.find(function(r){return r.id === rewards.activeTitle;});
+          if (title) activeItems.push(title);
+        }
+        if (activeItems.length === 0) {
+          html += '<p class="no-data-text">No rewards currently active. Equip rewards from the Rewards page.</p>';
+        } else {
+          html += '<div class="rewards-active">';
+          for (var ri = 0; ri < activeItems.length; ri++) {
+            html += '<span class="reward-pill">' + (activeItems[ri].icon || '&#x1F381;') + ' ' + escapeHtml(activeItems[ri].name || 'Reward') + '</span>';
+          }
+          html += '</div>';
+        }
+      }
+      html += '</div>';
+
+      container.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    var selectedSkills = (p.skills || []).slice();
+
+    function toggleSkill(el, skill) {
+      var idx = selectedSkills.indexOf(skill);
+      if (idx !== -1) { selectedSkills.splice(idx, 1); el.classList.remove('selected'); }
+      else { selectedSkills.push(skill); el.classList.add('selected'); }
+    }
+
+    function updateAvatarPreview() {
+      var url = document.getElementById('avatarUrl').value;
+      if (url) {
+        document.getElementById('previewAvatar').src = url;
+      }
+    }
+
+    function saveProfile() {
+      var name = document.getElementById('nameInput').value.trim();
+      var bio = document.getElementById('bioInput').value.trim();
+      var college = document.getElementById('collegeSelect').value;
+      var avatar = document.getElementById('avatarUrl').value.trim();
+
+      if (!name) { showToast('Name is required', 'error'); return; }
+
+      var users = lsGet(usersKey) || [];
+      var userIdx = users.findIndex(function(u) { return u.id === userId; });
+      if (userIdx !== -1) {
+        users[userIdx].name = name;
+        users[userIdx].college = college;
+        users[userIdx].skills = selectedSkills.slice();
+        if (avatar) users[userIdx].avatar = avatar;
+        lsSet(usersKey, users);
+      }
+
+      var prof = getProfile();
+      prof.profile.name = name;
+      prof.profile.bio = bio;
+      prof.profile.college = college;
+      prof.profile.skills = selectedSkills.slice();
+      if (avatar) prof.profile.avatar = avatar;
+      lsSet(profileKey, prof);
+
+      currentUser.name = name;
+      currentUser.college = college;
+      currentUser.skills = selectedSkills.slice();
+      if (avatar) currentUser.avatar = avatar;
+      lsSet('loopstudy_currentUser', currentUser);
+
+      showToast('Profile saved successfully!', 'success');
+      setTimeout(function() { window.location.reload(); }, 600);
+    }
+
+    function updatePassword() {
+      var currentPwd = document.getElementById('currentPwd').value;
+      var newPwd = document.getElementById('newPwd').value;
+      var confirmPwd = document.getElementById('confirmPwd').value;
+
+      if (!currentPwd || !newPwd || !confirmPwd) {
+        showToast('Please fill in all password fields', 'error');
+        return;
+      }
+      if (newPwd !== confirmPwd) {
+        showToast('New passwords do not match', 'error');
+        return;
+      }
+      if (newPwd.length < 6) {
+        showToast('New password must be at least 6 characters', 'error');
+        return;
+      }
+
+      var users = lsGet(usersKey) || [];
+      var userIdx = users.findIndex(function(u) { return u.id === userId; });
+      if (userIdx === -1) { showToast('User not found', 'error'); return; }
+      if (users[userIdx].password !== currentPwd) {
+        showToast('Current password is incorrect', 'error');
+        return;
+      }
+
+      users[userIdx].password = newPwd;
+      lsSet(usersKey, users);
+
+      document.getElementById('currentPwd').value = '';
+      document.getElementById('newPwd').value = '';
+      document.getElementById('confirmPwd').value = '';
+      showToast('Password updated successfully!', 'success');
+    }
+
+    renderNav();
+    renderFooter();
+    renderProfile();
+  </script>
+</body>
+</html>

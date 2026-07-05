@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoopStudy — Rewards Store</title>
+  <link rel="stylesheet" href="css/main.css?v=2">
+  <link rel="stylesheet" href="css/components.css?v=2">
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .rewards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .reward-card {
+      background: var(--dark2);
+      border-radius: 14px;
+      padding: 24px 20px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-align: center;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .reward-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(108,99,255,0.27);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    .reward-icon {
+      font-size: 36px;
+      line-height: 1;
+    }
+
+    .reward-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .reward-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    .reward-cost {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--warning);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .reward-category-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 10px;
+      background: rgba(108,99,255,0.15);
+      color: var(--primary);
+    }
+
+    .reward-card.purchased {
+      border-color: rgba(0,200,83,0.3);
+    }
+
+    .reward-card.equipped {
+      border-color: var(--primary);
+    }
+
+    .equipped-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 10px;
+      background: rgba(0,200,83,0.15);
+      color: var(--success);
+    }
+
+    .points-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--dark2);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .points-display-label {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .points-display-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--warning);
+    }
+
+    .current-user-highlight {
+      background: rgba(255, 214, 0, 0.08);
+      border-color: rgba(255, 214, 0, 0.3);
+    }
+    .current-user-highlight:hover {
+      border-color: rgba(255, 214, 0, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      .rewards-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      .rewards-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="navbar">
+      <a href="dashboard.html" class="navbar-brand">LoopStudy</a>
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">&#9776;</button>
+      <ul class="navbar-links" id="navbarLinks">
+        <li><a href="dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="profile.html" class="navbar-link">Profile</a></li>
+        <li><a href="mentors.html" class="navbar-link">Mentors</a></li>
+        <li><a href="sessions.html" class="navbar-link">Sessions</a></li>
+        <li><a href="assessments.html" class="navbar-link">Assessments</a></li>
+        <li><a href="achievements.html" class="navbar-link">Achievements</a></li>
+        <li><a href="rewards.html" class="navbar-link active">Rewards</a></li>
+        <li><a href="leaderboard.html" class="navbar-link">Leaderboard</a></li>
+        <li><a href="growth-center.html" class="navbar-link">Growth Center</a></li>
+        <li><a href="settings.html" class="navbar-link">Settings</a></li>
+      </ul>
+      <div class="navbar-right" id="navbarRight"></div>
+    </nav>
+
+    <main class="main-content">
+      <div class="page">
+        <div class="page-container">
+          <header class="page-header">
+            <h1 class="page-title">Rewards Store</h1>
+            <p class="page-subtitle">Spend your SkillPoints on exclusive rewards</p>
+          </header>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+            <div class="filter-group" id="categoryFilters">
+              <button class="filter-btn active" data-category="all">All</button>
+              <button class="filter-btn" data-category="theme">Themes</button>
+              <button class="filter-btn" data-category="frame">Frames</button>
+              <button class="filter-btn" data-category="title">Titles</button>
+              <button class="filter-btn" data-category="mentor-access">Mentor Access</button>
+              <button class="filter-btn" data-category="profile-decoration">Profile Decoration</button>
+            </div>
+            <div class="points-display">
+              <span class="points-display-label">Your Balance:</span>
+              <span class="points-display-value" id="pointsDisplay">⭐ 0</span>
+            </div>
+          </div>
+
+          <div class="rewards-grid" id="rewardsGrid"></div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <div>
+          <a href="dashboard.html" class="footer-brand">LoopStudy</a>
+          <p class="footer-desc">Learn, Assess, Earn and Grow. Master in-demand skills with interactive learning paths, mentorship, and gamified challenges.</p>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="dashboard.html" class="footer-link">Dashboard</a></li>
+            <li><a href="mentors.html" class="footer-link">Mentors</a></li>
+            <li><a href="sessions.html" class="footer-link">Sessions</a></li>
+            <li><a href="leaderboard.html" class="footer-link">Leaderboard</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Resources</h4>
+          <ul class="footer-links">
+            <li><a href="assessments.html" class="footer-link">Assessments</a></li>
+            <li><a href="rewards.html" class="footer-link">Rewards Store</a></li>
+            <li><a href="achievements.html" class="footer-link">Achievements</a></li>
+            <li><a href="growth-center.html" class="footer-link">Growth Center</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-section-title">Support</h4>
+          <ul class="footer-links">
+            <li><a href="profile.html" class="footer-link">Profile</a></li>
+            <li><a href="settings.html" class="footer-link">Settings</a></li>
+            <li><a href="#" class="footer-link">Help Center</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="footer-copy">&copy; 2025 LoopStudy. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/storage.js?v=2"></script>
+  <script>
+
+    const user = Store.getCurrentUser();
+    if (!user) { window.location.href = 'login.html'; throw new Error('Not authenticated'); }
+
+    const userId = user.id;
+    const userData = Store.getUserData(userId);
+    let skillPoints = userData?.skillPoints || 0;
+    let rewardsData = Store.getRewards(userId);
+    const allRewards = Store.REWARDS_DATA;
+
+    document.getElementById('pointsDisplay').textContent = '⭐ ' + skillPoints;
+
+    function renderNavbar() {
+      const right = document.getElementById('navbarRight');
+      right.innerHTML = `
+        <div class="navbar-user">
+          <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.name)}" alt="" class="navbar-avatar">
+          <span class="navbar-username">${user.name}</span>
+          <span class="navbar-points">⭐ ${userData?.skillPoints || 0}</span>
+        </div>
+      `;
+    }
+    renderNavbar();
+
+    document.getElementById('hamburgerBtn').addEventListener('click', () => {
+      document.getElementById('navbarLinks').classList.toggle('open');
+    });
+
+    function purchaseReward(rewardId) {
+      const reward = allRewards.find(r => r.id === rewardId);
+      if (!reward) return;
+      if (skillPoints < reward.cost) {
+        alert('Insufficient SkillPoints!');
+        return;
+      }
+      if (rewardsData.purchasedRewards.some(r => r.id === rewardId)) {
+        alert('Already purchased!');
+        return;
+      }
+      const confirmed = confirm(`Purchase "${reward.name}" for ⭐ ${reward.cost}?`);
+      if (!confirmed) return;
+
+      const result = Store.purchaseReward(userId, rewardId, (cost) => skillPoints >= cost);
+      if (result.success) {
+        Store.spendSkillPoints(userId, reward.cost, `Purchased ${reward.name}`, 'reward-purchase');
+        skillPoints -= reward.cost;
+        rewardsData = Store.getRewards(userId);
+        document.getElementById('pointsDisplay').textContent = '⭐ ' + skillPoints;
+        renderRewards(currentCategory);
+      } else {
+        alert(result.error || 'Purchase failed');
+      }
+    }
+
+    window.purchaseReward = purchaseReward;
+
+    function equipReward(rewardId, category) {
+      const ok = Store.equipReward(userId, rewardId, category);
+      if (ok) {
+        rewardsData = Store.getRewards(userId);
+        renderRewards(currentCategory);
+      }
+    }
+
+    window.equipReward = equipReward;
+
+    let currentCategory = 'all';
+
+    function renderRewards(category) {
+      currentCategory = category;
+      const grid = document.getElementById('rewardsGrid');
+      const filtered = category === 'all' ? allRewards : allRewards.filter(r => r.category === category);
+      if (filtered.length === 0) {
+        grid.innerHTML = '<p class="no-data">No rewards in this category.</p>';
+        return;
+      }
+      grid.innerHTML = filtered.map(r => {
+        const isPurchased = rewardsData.purchasedRewards.some(p => p.id === r.id);
+        let isActive = false;
+        if (r.category === 'theme') isActive = rewardsData.activeTheme === r.id;
+        else if (r.category === 'frame') isActive = rewardsData.activeFrame === r.id;
+        else if (r.category === 'title') isActive = rewardsData.activeTitle === r.id;
+
+        const canAfford = skillPoints >= r.cost;
+        let catLabel = r.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+        return `
+          <div class="reward-card ${isPurchased ? 'purchased' : ''} ${isActive ? 'equipped' : ''}">
+            <div class="reward-icon">${r.icon}</div>
+            <div class="reward-name">${r.name}</div>
+            <p class="reward-desc">${r.description}</p>
+            <div class="reward-cost">⭐ ${r.cost}</div>
+            <span class="reward-category-badge">${catLabel}</span>
+            ${isActive
+              ? '<span class="equipped-badge">Equipped</span>'
+              : isPurchased
+                ? (r.category === 'theme' || r.category === 'frame' || r.category === 'title')
+                  ? `<button class="btn btn-sm btn-secondary" onclick="equipReward('${r.id}','${r.category}')">Equip</button>`
+                  : '<span class="equipped-badge">Owned</span>'
+                : `<button class="btn btn-sm ${canAfford ? 'btn-primary' : 'btn-outline'}" onclick="purchaseReward('${r.id}')" ${!canAfford ? 'disabled' : ''}>
+                     ${canAfford ? 'Purchase' : 'Insufficient'}
+                   </button>`
+            }
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderRewards('all');
+
+    document.getElementById('categoryFilters').querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('categoryFilters').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderRewards(btn.dataset.category);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - LoopStudy</title>
+  <link rel="stylesheet" href="css/main.css?v=2">
+  <link rel="stylesheet" href="css/auth.css?v=2">
+  <script src="js/storage.js?v=2"></script>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-container register">
+      <div class="auth-header">
+        <a href="index.html" class="auth-logo">LoopStudy</a>
+        <h2>Create Account</h2>
+        <p>Join the learning community today</p>
+      </div>
+
+      <form class="auth-form" id="registerForm" novalidate>
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input id="name" type="text" placeholder="Enter your full name" required>
+          <span class="error-text" id="nameError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="regEmail">Email</label>
+          <input id="regEmail" type="email" placeholder="Enter your email" required>
+          <span class="error-text" id="regEmailError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="regPassword">Password</label>
+          <div class="password-wrapper">
+            <input id="regPassword" type="password" placeholder="Create a password" required>
+            <button type="button" class="password-toggle" id="toggleRegPassword" tabindex="-1">&#128065;</button>
+          </div>
+          <div class="strength-bar-container" id="strengthContainer" style="display:none;">
+            <div class="strength-bar">
+              <div class="strength-fill" id="strengthFill"></div>
+            </div>
+            <span class="strength-label" id="strengthLabel"></span>
+          </div>
+          <span class="error-text" id="regPasswordError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <div class="password-wrapper">
+            <input id="confirmPassword" type="password" placeholder="Confirm your password" required>
+            <button type="button" class="password-toggle" id="toggleConfirmPassword" tabindex="-1">&#128065;</button>
+          </div>
+          <span class="error-text" id="confirmPasswordError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="college">College</label>
+          <select id="college" required>
+            <option value="">Select your college</option>
+            <option value="Anurag University">Anurag University</option>
+            <option value="Srinidhi University">Srinidhi University</option>
+            <option value="Nalla Malla Reddy University">Nalla Malla Reddy University</option>
+            <option value="Malla Reddy University">Malla Reddy University</option>
+            <option value="Indian Institute of Technology Bombay">Indian Institute of Technology Bombay</option>
+            <option value="Indian Institute of Technology Delhi">Indian Institute of Technology Delhi</option>
+            <option value="National Institute of Technology Trichy">National Institute of Technology Trichy</option>
+            <option value="Vellore Institute of Technology">Vellore Institute of Technology</option>
+            <option value="SRM Institute of Science and Technology">SRM Institute of Science and Technology</option>
+            <option value="Manipal Institute of Technology">Manipal Institute of Technology</option>
+            <option value="International Institute of Information Technology Hyderabad">International Institute of Information Technology Hyderabad</option>
+          </select>
+          <span class="error-text" id="collegeError"></span>
+        </div>
+
+        <div class="form-group">
+          <label>Skills Interested In</label>
+          <div class="skills-grid" id="skillsGrid">
+            <button type="button" class="skill-chip" data-skill="Python">Python</button>
+            <button type="button" class="skill-chip" data-skill="Java">Java</button>
+            <button type="button" class="skill-chip" data-skill="Web Development">Web Development</button>
+            <button type="button" class="skill-chip" data-skill="React">React</button>
+            <button type="button" class="skill-chip" data-skill="Data Science">Data Science</button>
+            <button type="button" class="skill-chip" data-skill="Machine Learning">Machine Learning</button>
+          </div>
+        </div>
+
+        <label class="checkbox-label" style="margin-top:4px;">
+          <input type="checkbox" id="termsCheck">
+          <span>I agree to the <a href="#" class="link-accent" onclick="event.preventDefault();alert('Terms of Service')">Terms of Service</a> and <a href="#" class="link-accent" onclick="event.preventDefault();alert('Privacy Policy')">Privacy Policy</a></span>
+        </label>
+
+        <button type="submit" class="auth-btn" id="registerBtn">Create Account</button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a href="login.html" class="link-accent">Sign in</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Redirect if already logged in
+      try {
+        var currentUser = JSON.parse(localStorage.getItem('loopstudy_currentUser'));
+        if (currentUser && currentUser.id) {
+          window.location.href = 'dashboard.html';
+          return;
+        }
+      } catch(e) {}
+
+      // Pre-select mentor if query param
+      var urlParams = new URLSearchParams(window.location.search);
+      var isMentor = urlParams.get('mentor') === 'true';
+
+      var form = document.getElementById('registerForm');
+      var nameInput = document.getElementById('name');
+      var emailInput = document.getElementById('regEmail');
+      var passwordInput = document.getElementById('regPassword');
+      var confirmInput = document.getElementById('confirmPassword');
+      var collegeSelect = document.getElementById('college');
+      var termsCheck = document.getElementById('termsCheck');
+      var registerBtn = document.getElementById('registerBtn');
+
+      var nameError = document.getElementById('nameError');
+      var emailError = document.getElementById('regEmailError');
+      var passwordError = document.getElementById('regPasswordError');
+      var confirmError = document.getElementById('confirmPasswordError');
+      var collegeError = document.getElementById('collegeError');
+
+      var strengthContainer = document.getElementById('strengthContainer');
+      var strengthFill = document.getElementById('strengthFill');
+      var strengthLabel = document.getElementById('strengthLabel');
+
+      var selectedSkills = [];
+
+      // Password toggle
+      document.getElementById('toggleRegPassword').addEventListener('click', function() {
+        var isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        this.innerHTML = isPassword ? '&#128584;' : '&#128065;';
+      });
+      document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+        var isPassword = confirmInput.type === 'password';
+        confirmInput.type = isPassword ? 'text' : 'password';
+        this.innerHTML = isPassword ? '&#128584;' : '&#128065;';
+      });
+
+      // Skill chips
+      var chips = document.querySelectorAll('.skill-chip');
+      chips.forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          var skill = this.getAttribute('data-skill');
+          var idx = selectedSkills.indexOf(skill);
+          if (idx > -1) {
+            selectedSkills.splice(idx, 1);
+            this.classList.remove('selected');
+          } else {
+            selectedSkills.push(skill);
+            this.classList.add('selected');
+          }
+        });
+      });
+
+      // Password strength
+      function getStrength(pw) {
+        var score = 0;
+        if (pw.length >= 6) score++;
+        if (pw.length >= 10) score++;
+        if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+        if (/\d/.test(pw)) score++;
+        if (/[^a-zA-Z0-9]/.test(pw)) score++;
+        return score;
+      }
+
+      var strengthLabels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+      var strengthColors = ['#FF6B6B', '#FF6B6B', '#FFD600', '#FFD600', '#00C853', '#00C853'];
+      var strengthClasses = ['weak', 'weak', 'medium', 'medium', 'strong', 'very-strong'];
+
+      passwordInput.addEventListener('input', function() {
+        var pw = this.value;
+        if (!pw) {
+          strengthContainer.style.display = 'none';
+          return;
+        }
+        strengthContainer.style.display = 'flex';
+        var score = getStrength(pw);
+        var pct = Math.min((score / 5) * 100, 100);
+        strengthFill.style.width = pct + '%';
+        strengthFill.style.background = strengthColors[score];
+        strengthFill.className = 'strength-fill ' + strengthClasses[score];
+        strengthLabel.textContent = strengthLabels[score];
+        strengthLabel.style.color = strengthColors[score];
+        strengthLabel.className = 'strength-label ' + strengthClasses[score];
+      });
+
+      function validateEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      function clearErrors() {
+        var errs = [nameError, emailError, passwordError, confirmError, collegeError];
+        var inputs = [nameInput, emailInput, passwordInput, confirmInput, collegeSelect];
+        errs.forEach(function(el) { if (el) el.textContent = ''; });
+        inputs.forEach(function(el) { if (el) el.classList.remove('input-error'); });
+      }
+
+      function showError(input, errorEl, msg) {
+        if (input) input.classList.add('input-error');
+        if (errorEl) errorEl.textContent = msg;
+      }
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        clearErrors();
+
+        var name = nameInput.value.trim();
+        var email = emailInput.value.trim();
+        var password = passwordInput.value;
+        var confirm = confirmInput.value;
+        var college = collegeSelect.value;
+        var terms = termsCheck.checked;
+        var valid = true;
+
+        if (!name) {
+          showError(nameInput, nameError, 'Full name is required');
+          valid = false;
+        }
+
+        if (!email) {
+          showError(emailInput, emailError, 'Email is required');
+          valid = false;
+        } else if (!validateEmail(email)) {
+          showError(emailInput, emailError, 'Invalid email format');
+          valid = false;
+        }
+
+        if (!password) {
+          showError(passwordInput, passwordError, 'Password is required');
+          valid = false;
+        } else if (password.length < 6) {
+          showError(passwordInput, passwordError, 'Password must be at least 6 characters');
+          valid = false;
+        }
+
+        if (!confirm) {
+          showError(confirmInput, confirmError, 'Please confirm your password');
+          valid = false;
+        } else if (password !== confirm) {
+          showError(confirmInput, confirmError, 'Passwords do not match');
+          valid = false;
+        }
+
+        if (!college) {
+          showError(collegeSelect, collegeError, 'Please select your college');
+          valid = false;
+        }
+
+        if (!terms) {
+          alert('Please agree to the Terms of Service and Privacy Policy');
+          valid = false;
+        }
+
+        if (!valid) return;
+
+        registerBtn.disabled = true;
+        registerBtn.textContent = 'Creating Account...';
+
+        try {
+          var users = JSON.parse(localStorage.getItem('loopstudy_users') || '[]');
+
+          if (users.find(function(u) { return u.email === email; })) {
+            showError(emailInput, emailError, 'Email already registered');
+            registerBtn.disabled = false;
+            registerBtn.textContent = 'Create Account';
+            return;
+          }
+
+          var newUser = {
+            id: Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 9),
+            name: name,
+            email: email,
+            password: password,
+            college: college,
+            skills: selectedSkills,
+            avatar: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name),
+            mentorStatus: isMentor,
+            createdAt: new Date().toISOString()
+          };
+
+          users.push(newUser);
+          localStorage.setItem('loopstudy_users', JSON.stringify(users));
+
+          var safeUser = { id: newUser.id, name: newUser.name, email: newUser.email, college: newUser.college, skills: newUser.skills, avatar: newUser.avatar, mentorStatus: newUser.mentorStatus, createdAt: newUser.createdAt };
+          localStorage.setItem('loopstudy_currentUser', JSON.stringify(safeUser));
+
+          window.location.href = 'dashboard.html';
+        } catch(err) {
+          alert('Registration failed: ' + (err.message || 'Unknown error'));
+          registerBtn.disabled = false;
+          registerBtn.textContent = 'Create Account';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
