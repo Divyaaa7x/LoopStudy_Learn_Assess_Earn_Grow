@@ -289,6 +289,14 @@
       }).join('');
     }
 
+    const SAMPLE_MENTORS = [
+      { id: 'sample-1', name: 'Arjun Sharma', skill: 'Python', rating: 4.8, sessions: 340 },
+      { id: 'sample-2', name: 'Vikram Reddy', skill: 'Web Development', rating: 4.9, sessions: 510 },
+      { id: 'sample-3', name: 'Ananya Mishra', skill: 'Machine Learning', rating: 4.9, sessions: 370 },
+      { id: 'sample-4', name: 'Neha Patel', skill: 'Java', rating: 4.6, sessions: 280 },
+      { id: 'sample-5', name: 'Isha Talwar', skill: 'React', rating: 4.8, sessions: 290 },
+    ].map(m => ({ ...m, avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}` }));
+
     function buildMentors() {
       const mentors = users
         .filter(u => u.mentorStatus)
@@ -304,7 +312,7 @@
           };
         }).sort((a, b) => b.sessions - a.sessions);
 
-      return mentors;
+      return mentors.length > 0 ? mentors : SAMPLE_MENTORS;
     }
 
     function renderMentors() {

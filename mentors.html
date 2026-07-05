@@ -27,8 +27,16 @@
     .mentor-college { font-size: 13px; color: var(--text-muted); }
     .mentor-bio { font-size: 13px; color: #bbb; line-height: 1.5; margin: 0; }
     .mentor-card-actions { display: flex; gap: 10px; margin-top: 4px; }
-    .view-profile-btn { padding: 8px 18px; border-radius: 10px; border: none; background: rgba(108,99,255,0.15); color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .view-profile-btn { flex: 1; padding: 8px 18px; border-radius: 10px; border: none; background: rgba(108,99,255,0.15); color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .view-profile-btn:hover { background: rgba(108,99,255,0.25); }
+    .book-btn { flex: 1; padding: 8px 18px; border-radius: 10px; border: none; background: var(--primary); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .book-btn:hover { background: var(--primary-dark); }
+
+    .booking-summary { display: flex; align-items: center; justify-content: space-between; background: var(--dark); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+    .booking-summary-mentor { font-size: 14px; font-weight: 600; color: #fff; }
+    .booking-summary-cost { font-size: 14px; font-weight: 700; color: var(--warning); white-space: nowrap; }
+    .booking-summary-cost.free { color: var(--success); }
+    .points-warning { font-size: 12px; color: var(--secondary); margin-top: -8px; margin-bottom: 16px; line-height: 1.5; }
 
     .modal-wide .modal-content { max-width: 640px; }
     .modal-profile-top { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px; }
@@ -115,6 +123,18 @@
         <div class="modal-footer" id="modalFooter"></div>
       </div>
     </div>
+
+    <div class="modal-overlay hidden" id="bookingModal">
+      <div class="modal-content" style="max-height:90vh;overflow-y:auto">
+        <div class="modal-header">
+          <h2 class="modal-title">Book a Session</h2>
+          <button class="modal-close" onclick="closeBookingModal()">✕</button>
+        </div>
+        <div class="modal-body" id="bookingModalBody"></div>
+      </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
 
     <footer class="footer">
       <div class="footer-container">
@@ -232,6 +252,7 @@
           <p class="mentor-bio">${m.bio}</p>
           <div class="mentor-card-actions">
             <button class="view-profile-btn" onclick="openModal(${m.id})">View Profile</button>
+            <button class="book-btn" onclick="openBookingModal(${m.id})">Book Session</button>
           </div>
         </div>
       `).join('');
@@ -286,7 +307,7 @@
 
       footer.innerHTML = `
         <button class="btn btn-outline" onclick="closeModal()">Close</button>
-        <button class="btn btn-primary" onclick="bookWithMentor(${m.id})">Book Session</button>
+        <button class="btn btn-primary" onclick="openBookingModal(${m.id})">Book Session</button>
       `;
 
       document.getElementById('mentorModal').classList.remove('hidden');
@@ -296,10 +317,176 @@
       document.getElementById('mentorModal').classList.add('hidden');
     }
 
-    function bookWithMentor(id) {
-      closeModal();
-      window.location.href = 'sessions.html?mentor=' + id;
+    // ===== Booking form modal + points logic =====
+
+    function getCurrentUser() {
+      try { return JSON.parse(localStorage.getItem('loopstudy_currentUser')); }
+      catch(e) { return null; }
     }
+
+    function getProfile() {
+      const u = getCurrentUser();
+      if (!u) return null;
+      try { return JSON.parse(localStorage.getItem('loopstudy_profile_' + u.id)); }
+      catch(e) { return null; }
+    }
+
+    function saveProfile(profile) {
+      const u = getCurrentUser();
+      if (!u) return;
+      localStorage.setItem('loopstudy_profile_' + u.id, JSON.stringify(profile));
+    }
+
+    function getUserSessions() {
+      const u = getCurrentUser();
+      if (!u) return [];
+      try { return JSON.parse(localStorage.getItem('loopstudy_sessions_' + u.id)) || []; }
+      catch(e) { return []; }
+    }
+
+    function saveUserSessions(sessions) {
+      const u = getCurrentUser();
+      if (!u) return;
+      localStorage.setItem('loopstudy_sessions_' + u.id, JSON.stringify(sessions));
+    }
+
+    function isFirstBooking() {
+      return getUserSessions().length === 0;
+    }
+
+    function todayDateString() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.innerHTML = '<span>' + (icons[type] || '') + '</span><span>' + message + '</span>';
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    function openBookingModal(id) {
+      const m = mentors.find(x => x.id === id);
+      if (!m) return;
+      closeModal();
+
+      const profile = getProfile();
+      const skillPoints = profile?.skillPoints || 0;
+      const free = isFirstBooking();
+      const cost = free ? 0 : m.cost;
+      const canAfford = free || skillPoints >= cost;
+      const shortfall = cost - skillPoints;
+
+      const body = document.getElementById('bookingModalBody');
+      body.innerHTML = `
+        <div class="booking-summary">
+          <span class="booking-summary-mentor">${m.name} &middot; ${m.skill}</span>
+          <span class="booking-summary-cost ${free ? 'free' : ''}">${free ? '🎉 Free — first booking!' : '⭐ ' + cost + ' pts'}</span>
+        </div>
+        ${!canAfford ? `<div class="points-warning">You need ${shortfall} more points to book this mentor — complete sessions and assessments to earn points.</div>` : ''}
+        <div class="booking-form-group form-group">
+          <label class="form-label">Date</label>
+          <input class="form-input" type="date" id="bookingDate" min="${todayDateString()}">
+        </div>
+        <div class="booking-form-group form-group">
+          <label class="form-label">Time Slot</label>
+          <select class="form-select" id="bookingTimeSlot">
+            <option value="">Select time slot...</option>
+            <option value="Morning (9-12)">Morning (9-12)</option>
+            <option value="Afternoon (12-3)">Afternoon (12-3)</option>
+            <option value="Evening (3-6)">Evening (3-6)</option>
+          </select>
+        </div>
+        <div class="booking-form-group form-group">
+          <label class="form-label">Session Topic</label>
+          <input class="form-input" type="text" id="bookingTopic" placeholder="e.g. Debugging a recursion problem">
+        </div>
+        <div class="booking-form-group form-group">
+          <label class="form-label">Notes (optional)</label>
+          <textarea class="form-textarea" id="bookingNotes" rows="3" placeholder="Anything the mentor should know beforehand..."></textarea>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px">
+          <button class="btn btn-outline" onclick="closeBookingModal()">Cancel</button>
+          <button class="btn btn-primary" id="confirmBookingBtn" ${canAfford ? '' : 'disabled'} onclick="confirmBooking(${m.id})">Confirm Booking</button>
+        </div>
+      `;
+
+      document.getElementById('bookingModal').classList.remove('hidden');
+    }
+
+    function closeBookingModal() {
+      document.getElementById('bookingModal').classList.add('hidden');
+    }
+
+    function confirmBooking(id) {
+      const m = mentors.find(x => x.id === id);
+      if (!m) return;
+
+      const date = document.getElementById('bookingDate').value;
+      const timeSlot = document.getElementById('bookingTimeSlot').value;
+      const topic = document.getElementById('bookingTopic').value.trim();
+      const notes = document.getElementById('bookingNotes').value.trim();
+
+      if (!date) { showToast('Please select a date.', 'error'); return; }
+      if (date < todayDateString()) { showToast('Please select today or a future date.', 'error'); return; }
+      if (!timeSlot) { showToast('Please select a time slot.', 'error'); return; }
+      if (!topic) { showToast('Please enter a session topic.', 'error'); return; }
+
+      const free = isFirstBooking();
+      const cost = free ? 0 : m.cost;
+      const profile = getProfile();
+      const skillPoints = profile?.skillPoints || 0;
+
+      if (!free && skillPoints < cost) {
+        showToast(`You need ${cost - skillPoints} more points to book this mentor.`, 'error');
+        return;
+      }
+
+      const sessions = getUserSessions();
+      sessions.push({
+        id: Date.now().toString(36) + '_' + Math.random().toString(36).substring(2,9),
+        studentId: getCurrentUser()?.id || '',
+        mentorId: id.toString(),
+        mentorName: m.name,
+        skill: m.skill,
+        date: date,
+        timeSlot: timeSlot,
+        topic: topic,
+        notes: notes,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      });
+      saveUserSessions(sessions);
+
+      if (!free && profile) {
+        profile.skillPoints = skillPoints - cost;
+        profile.level = Math.min(Math.floor(profile.skillPoints / 500) + 1, 5);
+        if (!profile.transactions) profile.transactions = [];
+        profile.transactions.push({
+          id: Date.now().toString(36) + '_' + Math.random().toString(36).substring(2,9),
+          type: 'spent', amount: cost,
+          reason: 'Booked session with ' + m.name,
+          date: new Date().toISOString(), source: 'session-booking'
+        });
+        saveProfile(profile);
+        document.getElementById('navPoints').textContent = profile.skillPoints;
+      }
+
+      closeBookingModal();
+      showToast(`Session booked with ${m.name} on ${date} at ${timeSlot}!`, 'success');
+    }
+
+    // Close modals when clicking the backdrop
+    document.getElementById('mentorModal').addEventListener('click', e => {
+      if (e.target.id === 'mentorModal') closeModal();
+    });
+    document.getElementById('bookingModal').addEventListener('click', e => {
+      if (e.target.id === 'bookingModal') closeBookingModal();
+    });
 
     document.addEventListener('DOMContentLoaded', renderMentors);
   </script>
