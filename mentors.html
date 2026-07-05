@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mentor Marketplace - LoopStudy</title>
-  <link rel="stylesheet" href="css/main.css?v=2">
-  <link rel="stylesheet" href="css/components.css?v=2">
+  <link rel="stylesheet" href="css/main.css?v=3">
+  <link rel="stylesheet" href="css/components.css?v=3">
   <style>
     .mentors-page { padding: 24px; margin-top: 64px; min-height: 100vh; background: var(--dark); }
     .mentors-container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
@@ -113,7 +113,7 @@
       </div>
     </div>
 
-    <div class="modal-overlay hidden" id="mentorModal">
+    <div class="modal-overlay hidden" id="mentorModal" style="display:none">
       <div class="modal-content modal-wide" style="max-height:90vh;overflow-y:auto">
         <div class="modal-header">
           <h2 class="modal-title">Mentor Profile</h2>
@@ -124,7 +124,7 @@
       </div>
     </div>
 
-    <div class="modal-overlay hidden" id="bookingModal">
+    <div class="modal-overlay hidden" id="bookingModal" style="display:none">
       <div class="modal-content" style="max-height:90vh;overflow-y:auto">
         <div class="modal-header">
           <h2 class="modal-title">Book a Session</h2>
@@ -310,11 +310,15 @@
         <button class="btn btn-primary" onclick="openBookingModal(${m.id})">Book Session</button>
       `;
 
-      document.getElementById('mentorModal').classList.remove('hidden');
+      const mentorModalEl = document.getElementById('mentorModal');
+      mentorModalEl.classList.remove('hidden');
+      mentorModalEl.style.display = 'flex';
     }
 
     function closeModal() {
-      document.getElementById('mentorModal').classList.add('hidden');
+      const mentorModalEl = document.getElementById('mentorModal');
+      mentorModalEl.classList.add('hidden');
+      mentorModalEl.style.display = 'none';
     }
 
     // ===== Booking form modal + points logic =====
@@ -415,11 +419,15 @@
         </div>
       `;
 
-      document.getElementById('bookingModal').classList.remove('hidden');
+      const bookingModalEl = document.getElementById('bookingModal');
+      bookingModalEl.classList.remove('hidden');
+      bookingModalEl.style.display = 'flex';
     }
 
     function closeBookingModal() {
-      document.getElementById('bookingModal').classList.add('hidden');
+      const bookingModalEl = document.getElementById('bookingModal');
+      bookingModalEl.classList.add('hidden');
+      bookingModalEl.style.display = 'none';
     }
 
     function confirmBooking(id) {
@@ -486,6 +494,13 @@
     });
     document.getElementById('bookingModal').addEventListener('click', e => {
       if (e.target.id === 'bookingModal') closeBookingModal();
+    });
+
+    // Close whichever modal is open when the user presses Escape
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      if (document.getElementById('bookingModal').style.display === 'flex') closeBookingModal();
+      else if (document.getElementById('mentorModal').style.display === 'flex') closeModal();
     });
 
     document.addEventListener('DOMContentLoaded', renderMentors);
