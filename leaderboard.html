@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LoopStudy — Leaderboard</title>
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/main.css?v=2">
+  <link rel="stylesheet" href="css/components.css?v=2">
   <style>
     .tab-content { display: none; }
     .tab-content.active { display: block; }
@@ -211,7 +211,7 @@
   </div>
 
   <script type="module">
-    import { Store } from './js/storage.js';
+    import { Store } from './js/storage.js?v=2';
 
     const user = Store.getCurrentUser();
     if (!user) { window.location.href = 'login.html'; throw new Error('Not authenticated'); }
