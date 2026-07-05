@@ -134,18 +134,18 @@ function notifyToastListeners() {
   _toastListeners.forEach(fn => fn(_toasts));
 }
 
-export function onToastsChange(fn) {
+function onToastsChange(fn) {
   _toastListeners.push(fn);
   return () => {
     _toastListeners = _toastListeners.filter(f => f !== fn);
   };
 }
 
-export function getToasts() {
+function getToasts() {
   return _toasts;
 }
 
-export function showToast(message, type = 'info') {
+function showToast(message, type = 'info') {
   const id = ++_toastIdCounter;
   _toasts = [..._toasts, { id, message, type }];
   notifyToastListeners();
@@ -827,7 +827,7 @@ function init(userId) {
 // ===================================================================
 // EXPORT
 // ===================================================================
-export const Store = {
+const Store = {
   getUsers,
   saveUsers,
   getCurrentUser,
@@ -879,3 +879,5 @@ export const Store = {
 
   REWARDS_DATA,
 };
+
+window.Store = Store;
